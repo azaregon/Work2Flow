@@ -1,0 +1,7 @@
+/__pycache__/
+__pycache__/varscollection.cpython-313.pyc
+__pycache__/mainControllerWauth.cpython-313.pyc
+__pycache__/dbManager.cpython-313.pyc
+/Submitted/
+database.db
+.gitignore

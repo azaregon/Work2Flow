@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 
 
-import mainControllerWauth as ctr
+import controllerBridge as ctr
 import varscollection
 import essentials
 
@@ -22,11 +22,9 @@ app.secret_key = '98as12uayvwnoasm8as9das3dsas2wqeyw4cweqw7ec6qw98ewc69cqw8ne2cq
 #         return 
 
 def checkauth():
-    if flask.session.get("ID") == None:
+    return flask.session.get("ID") == None
         # return flask.redirect("/login")
-        return False
-    else:
-        return True
+
      
 @app.route('/')
 def home():

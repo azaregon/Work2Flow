@@ -1,4 +1,4 @@
-import dbManager
+import mainControl
 import datetime
 import essentials as esn
 
@@ -11,7 +11,7 @@ def seeAssignment(assignmentID,ver,userID:str):
     # 0       1        2      3      4     5         6
 
     #get info
-    result = dbManager.get_assignment_details(assignmentID=assignmentID,version=ver,usrIDaccess=userID)
+    result = mainControl.get_assignment_details(assignmentID=assignmentID,version=ver,usrIDaccess=userID)
 
     return result
 
@@ -25,7 +25,7 @@ def seeAssignment(assignmentID,ver,userID:str):
 
 
 def AssignmentHistory(assignmentID,user):
-    result = dbManager.get_assignment_history(assignmentID=assignmentID,usrIDrequest=user)
+    result = mainControl.get_assignment_history(assignmentID=assignmentID,usrIDrequest=user)
     # if type(result) == str:
     #     print(result)
     #     return result 
@@ -49,7 +49,7 @@ def createAssignment(title:str,desc:str,duedate:str,userfrom:str,userfor:str,ema
     #date to epoch
     epochdue = datetime.datetime(int(year),int(month),int(day),int(hour),int(minute)).timestamp()
 
-    res = dbManager.new_assignment(title,desc,epochdue,userfrom,userfor,emailfor=emailfor,emailfrom=emailfrom)
+    res = mainControl.new_assignment(title,desc,epochdue,userfrom,userfor,emailfor=emailfor,emailfrom=emailfrom)
     return res 
     
 
@@ -60,24 +60,24 @@ def newRevision(AssignmentID:int,lastversion:int,desc:str,duedate:str,user):
     #date to epoch
     epochdue = datetime.datetime(int(year),int(month),int(day),int(hour),int(minute)).timestamp()
 
-    res = dbManager.new_revision(AssignmentID=AssignmentID,lastVersion=lastversion,desc=desc,duedateepoch=epochdue,usrIDrequest=user);
+    res = mainControl.new_revision(AssignmentID=AssignmentID,lastVersion=lastversion,desc=desc,duedateepoch=epochdue,usrIDrequest=user);
     return res
 
 def submit(AssignmentID:int,version:int,usrIDsubmitter):
 
-    return dbManager.submit(AssignmentID=AssignmentID,version=version,usrIDsubmitter=usrIDsubmitter)
+    return mainControl.submit(AssignmentID=AssignmentID,version=version,usrIDsubmitter=usrIDsubmitter)
 
 def acceptsubmit(AssignmentID:int,version:int,usrIDacceptsubmit):
-    return dbManager.accept_submit(AssignmentID=AssignmentID,version=version,usrIDacceptsubmit=usrIDacceptsubmit)
+    return mainControl.accept_submit(AssignmentID=AssignmentID,version=version,usrIDacceptsubmit=usrIDacceptsubmit)
 
 def acceptassign(AssignmentID:int,version:int,usrIDacceptassign):
-    return dbManager.accept_assign(AssignmentID=AssignmentID,version=version,usrIDacceptassign=usrIDacceptassign)
+    return mainControl.accept_assign(AssignmentID=AssignmentID,version=version,usrIDacceptassign=usrIDacceptassign)
 
 def getAssignmentCreatedByYouThatHasNotDoneYet(yourUserID:str):
-    return dbManager.Assignment_Created_By_You_That_Has_Not_Done_Yet(yourUserID=yourUserID)
+    return mainControl.Assignment_Created_By_You_That_Has_Not_Done_Yet(yourUserID=yourUserID)
 
 def getYourUnfinishedAssignment(yourUserID:str):
-    return dbManager.Your_Unfinished_Assignment(yourUserID=yourUserID)
+    return mainControl.Your_Unfinished_Assignment(yourUserID=yourUserID)
 
 if __name__ == '__main__':
     while 1:

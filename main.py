@@ -21,38 +21,40 @@ app.secret_key = '98as12uayvwnoasm8as9das3dsas2wqeyw4cweqw7ec6qw98ewc69cqw8ne2cq
 #     if flask.request.method == "GET" :
 #         return 
 
-def checkauth():
+def not_logged_in():
+    print(flask.session.get("ID"))
     return flask.session.get("ID") == None
         # return flask.redirect("/login")
 
      
 @app.route('/')
 def home():
-    if not checkauth():
+    if not_logged_in():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
     
     requesterID = str(flask.session.get("ID"))
+    requesterData = ctr.fetchUserByID(requesterID)
 
-    datas = ctr.getYourUnfinishedAssignment(yourUserID=requesterID)
-    print(datas)
+    unfinishedDatas = ctr.getYourUnfinishedAssignment(yourUserID=requesterID)
+    # print(unfinishedDatas)
 
-    datasHTML = ''''''
-    for data in datas:
-        if data[2] != "Empty":
-            datasHTML += f"""
+    unfinishedDatasHTML = ''''''
+    for unfinishedData in unfinishedDatas:
+        if unfinishedData[2] != "Empty":
+            unfinishedDatasHTML += f"""
                 <tr>
-                    <td>{data[0]}</td>
-                    <td>{data[1]}</td>
-                    <td>{data[2]}</td>
-                    <td>{data[3]}</td>
-                    <td>{datetime.fromtimestamp(data[7]).strftime('%Y-%m-%d %H:%M:%S')}</td>
-                    <td>{data[9]}</td>
-                    <td>{f'<a href="{varscollection.BASE_PATH}/Assignment/{data[0]}/{data[1]}?ID={requesterID}"> Link </a>'}
+                    <td>{unfinishedData[0]}</td>
+                    <td>{unfinishedData[1]}</td>
+                    <td>{unfinishedData[2]}</td>
+                    <td>{unfinishedData[3]}</td>
+                    <td>{datetime.fromtimestamp(unfinishedData[7]).strftime('%Y-%m-%d %H:%M:%S')}</td>
+                    <td>{ctr.fetchUserByID(unfinishedData[9])[2]}</td>
+                    <td>{f'<a href="{varscollection.BASE_PATH}/Assignment/{unfinishedData[0]}/{unfinishedData[1]}?ID={requesterID}"> Link </a>'}
                 </tr>
             """
 
     return f''' 
-        <h1>welcome {flask.session.get('ID')} </h1><br>
+        <h1>welcome {requesterData[2]} </h1><br>
         <div style="display:flex; gap:20px">
             <a href="{varscollection.BASE_PATH}/CreateAssignment"> Create new assignment</a>      
             <!--<a href="{varscollection.BASE_PATH}/assignmenttoother"> See your assignment to other</a>-->  
@@ -73,7 +75,7 @@ def home():
                 <th>from</th>
                 <th>url</th>
             </tr>
-            {datasHTML}
+            {unfinishedDatasHTML}
         </table>
 
         
@@ -85,7 +87,9 @@ def login():
     if flask.request.method == 'GET':
         return  f'''
         <form action="{varscollection.BASE_PATH}/login" method="post">
-            <input name="id" placeholder="Enter your ID"></input>
+            
+            <!--<input name="id" placeholder="Enter your ID"></input>-->
+
             <input name="email" placeholder="Enter your Email"></input>
             <input type="password" name="password" placeholder="Pwd"></input>
 
@@ -93,20 +97,25 @@ def login():
         </form>
                 '''
     elif flask.request.method == 'POST':
-        print('LOGG')
-        loginID = flask.request.form.get("id")
+        # print('LOGG')
+        # loginID = flask.request.form.get("id")
         loginEmail = flask.request.form.get("email")
         loginPW = flask.request.form.get("password")
 
-        pw,email,name = essentials.temp_login_system(loginID)
+        # Check Dataa
 
-        if loginPW != pw:
+        # userData = essentials.temp_login_system(loginID)
+        userData = ctr.fetchUserByEmail(loginEmail)
+        print(loginPW,userData[1],loginPW == userData[1])
+        # [ID, PW, Name, Email, Desc]
+
+        if loginPW != userData[1]:
             return flask.redirect(f'{varscollection.BASE_PATH}/login')
 
 
 
-        flask.session['ID'] = loginID
-        flask.session['EMAIL'] = loginEmail
+        flask.session['ID'] = userData[0]
+        flask.session['EMAIL'] = userData[1]
         
 
 
@@ -116,7 +125,7 @@ def login():
 @app.route("/dwnld/<assignmentID>/<version>/<filename>")
 def download(assignmentID,version,filename):
     #Auth
-    if not checkauth():
+    if not_logged_in():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
     
     # downloaderID = str(flask.request.args.get("ID"))
@@ -135,7 +144,7 @@ def download(assignmentID,version,filename):
 @app.route("/CreateAssignment",methods=['GET','POST'])
 def createAssignment():
     # Auth
-    if not checkauth():
+    if not_logged_in():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
     
     if flask.request.method == "GET":
@@ -150,7 +159,7 @@ def createAssignment():
         <textarea name="desc" placeholder="Desc.."></textarea><br><br>
         
         <input name="forid" placeholder="Target id" ></input><br><br><br>
-        <input name="emailfor" placeholder="Email for" ></input><br><br><br>
+        <!--<input name="emailfor" placeholder="Email for" ></input><br><br><br>-->
         
         <input name="duedate" id="duedate" type="datetime-local" /><br><br>
 
@@ -167,8 +176,12 @@ def createAssignment():
         title = flask.request.form.get("title")
         
         desc = flask.request.form.get("desc")
+
         userIDfor = flask.request.form.get("forid")
-        emailfor = flask.request.form.get("emailfor")
+        userDataFor = ctr.fetchUserByID(userIDfor)
+        emailfor = userDataFor[3]
+
+        # emailfor = flask.request.form.get("emailfor")
 
         duedate = flask.request.form.get("duedate").replace(":","-").replace("T","-")
         newAssignID  = ctr.createAssignment(title=title,desc=desc,duedate=duedate,userfrom=userIDfrom,userfor=userIDfor,emailfrom=emailfrom,emailfor=emailfor)
@@ -186,7 +199,7 @@ def createAssignment():
 def AssignmentHistory(assignmentID):
     # result = dbManager.get_assignment_history(workID=assignmentID)
     # Auth
-    if not checkauth():
+    if not_logged_in():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
 
     # requesterID = str(flask.request.args.get("ID"))
@@ -212,7 +225,7 @@ def seeAssignment(assignmentID,version):
     # 0       1        2      3      4     5         6       7    8               9      10
 
     # Auth
-    if not checkauth():
+    if not_logged_in():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
 
     # accesserID = str(flask.request.args.get('ID'))
@@ -330,7 +343,7 @@ def seeAssignment(assignmentID,version):
 @app.route('/acceptassignment',methods=['POST','GET'])
 def acceptAssignment():
     # Auth
-    if not checkauth():
+    if not_logged_in():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
 
     userID = flask.session.get("ID")
@@ -347,7 +360,7 @@ def acceptAssignment():
 @app.route("/revise",methods=['GET','POST'])
 def createRevision():
     # Auth
-    if not checkauth():
+    if not_logged_in():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
 
     if flask.request.method == "POST":
@@ -377,7 +390,7 @@ def createRevision():
 def submitFiles():
 
     # Auth
-    if not checkauth():
+    if not_logged_in():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
 
     if flask.request.method == "POST":    
@@ -418,7 +431,7 @@ def submitFiles():
 @app.route("/acceptSubmis",methods=["POST"])
 def acceptSubmis():
         # Auth
-    if not checkauth():
+    if not_logged_in():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
 
     if flask.request.method == "POST":
@@ -441,7 +454,7 @@ def acceptSubmis():
 @app.route("/Assignmenttoother")
 def assignmentToOther():
         # Auth
-    if not checkauth():
+    if not_logged_in():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
 
 

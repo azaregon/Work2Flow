@@ -1,4 +1,6 @@
 import mainControl
+import userController
+
 import datetime
 import essentials as esn
 
@@ -36,20 +38,18 @@ def AssignmentHistory(assignmentID,user):
     # for i in result:
     #     # ret_temp += f"<a href=\"/Assignment/{workID}/{i}\">version {i}</a><br>"
     #     ret_temp += f'''Version {i}\n'''
-
-
     return result
 
 
 
-def createAssignment(title:str,desc:str,duedate:str,userfrom:str,userfor:str,emailfrom:str,emailfor:str):
+def createAssignment(title:str,desc:str,duedate:str,userfrom:str,userfor:str,emailfrom:str,emailfor:str,isForAnyone:bool=False):
     print(duedate)
     year,month,day,hour,minute = tuple(duedate.split("-"))
 
     #date to epoch
     epochdue = datetime.datetime(int(year),int(month),int(day),int(hour),int(minute)).timestamp()
 
-    res = mainControl.new_assignment(title,desc,epochdue,userfrom,userfor,emailfor=emailfor,emailfrom=emailfrom)
+    res = mainControl.new_assignment(title,desc,epochdue,userfrom,userfor,emailfor=emailfor,emailfrom=emailfrom,isForAnyone=isForAnyone)
     return res 
     
 
@@ -64,7 +64,6 @@ def newRevision(AssignmentID:int,lastversion:int,desc:str,duedate:str,user):
     return res
 
 def submit(AssignmentID:int,version:int,usrIDsubmitter):
-
     return mainControl.submit(AssignmentID=AssignmentID,version=version,usrIDsubmitter=usrIDsubmitter)
 
 def acceptsubmit(AssignmentID:int,version:int,usrIDacceptsubmit):
@@ -78,6 +77,23 @@ def getAssignmentCreatedByYouThatHasNotDoneYet(yourUserID:str):
 
 def getYourUnfinishedAssignment(yourUserID:str):
     return mainControl.Your_Unfinished_Assignment(yourUserID=yourUserID)
+
+####
+
+def fetchUserByEmail(Email:str):
+    return userController.fetch_user_by_email(Email)
+
+def fetchUserByID(ID:str):
+    return userController.fetch_user_by_id(ID)
+
+def userRegistration(Name:str,Email:str,Desc:str,Password:str):
+    userController.user_registration(Name=Name,Email=Email,Desc=Desc,Password=Password)
+
+
+
+
+
+
 
 if __name__ == '__main__':
     while 1:

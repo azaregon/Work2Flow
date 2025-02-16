@@ -82,25 +82,20 @@ def get_assignment_details(assignmentID, version, usrIDaccess:str):
     return res
 
 
-def new_assignment(title:str,desc:str,duedateepoch:float,userfrom:str,userfor:str,emailfrom:str,emailfor:str):
-    conn = sqlite3.connect(DBFPATH)
-    cursor = conn.cursor()
-
-    # get the last sequence
-    # lastSeq, = cursor.execute("SELECT \"last_sequence\" from 'savesequence' WHERE name LIKE 'workdbtryassignmentID'").fetchone()
-    # set new sequence
-    # cursor.execute("UPDATE savesequence SET last_sequence = last_sequence + 1 WHERE name LIKE 'workdbtryassignmentID' ;")
-    # cursor.execute("UPDATE 'savesequence' SET 'last_sequence' = (SELECT 'last_sequence' from 'savesequence')'last_sequence' + 1 WHERE 'name' LIKE 'workdbtryassignmentID' ")
-
+def new_assignment(title:str,desc:str,duedateepoch:float,userfrom:str,userfor:str,emailfrom:str,emailfor:str,isForAnyone:bool=False):
     uniqueID = str(uuid.uuid4())
 
+    if isForAnyone:
+        uniqueID += '-2b55r5cs'
+
+    conn = sqlite3.connect(DBFPATH)
+    cursor = conn.cursor()
     folName = f"{uniqueID}-v1"
     command = f'''
         INSERT INTO {TABLENAME} values ("{uniqueID}", 1, 'diberikan', '{title}', '{desc}', '{folName}', {time.time()}, {duedateepoch}, 0, '{userfrom}', '{userfor}','{emailfrom}','{emailfor}' );
     '''
     # print(command)
     res = cursor.execute(command)
-
     conn.commit()
 
     esn.send_email(to_=[emailfor],subject="Assignment",msg=f""" New assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{uniqueID}/1?ID={userfor} """)

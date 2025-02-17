@@ -149,7 +149,7 @@ def createAssignment():
     
     if flask.request.method == "GET":
         return '''
-
+        <body>
         <form method="post">
         
         <!--<input name="fromid" placeholder="Your id" ></input><br><br><br>-->
@@ -158,14 +158,45 @@ def createAssignment():
         <input name="title" placeholder="Title.."></input><br><br>
         <textarea name="desc" placeholder="Desc.."></textarea><br><br>
         
-        <input name="forid" placeholder="Target id" ></input><br><br><br>
+        <!--<input name="forid" placeholder="Target id" ></input><br><br><br>-->
         <!--<input name="emailfor" placeholder="Email for" ></input><br><br><br>-->
+
+        <label for="outsideDBcheck">for user outside system</label>
+        <input type="checkbox" name="outsideDBcheck" id="outsideDBcheck" onchange="abbc()">
         
-        <input name="duedate" id="duedate" type="datetime-local" /><br><br>
+        <br><br>
+        <div id="changeTarget">
+            <input type="text" name="targetID" id="tgtID" placeholder="enter receiver ID" >
+            <input type="email" name="targetEmail" id="tgtEM" placeholder="enter receiver email" hidden>
+        </div>
+
+        <input name="duedate" id="duedate" type="datetime-local"  /><br><br>
 
 
         <button type="submit">Submit</button>
         </form>
+
+
+        <script>
+
+            function abbc() {   
+            forOutsideDB = document.querySelector("#outsideDBCheck").checked
+            if (forOutsideDB) {
+                document.querySelector("#tgtEM").hidden = false;
+                document.querySelector("#tgtEM").value ="";
+                document.querySelector("#tgtID").hidden = true;
+                document.querySelector("#tgtID").value = "";
+            } else {
+                document.querySelector("#tgtEM").hidden = true;
+                document.querySelector("#tgtEM").value = "";
+                document.querySelector("#tgtID").hidden = false;
+                document.querySelector("#tgtID").value = "";
+            
+            }
+            }
+        </script>
+        
+        </body>
         '''
     elif flask.request.method == "POST":
         # userIDfrom = flask.request.form.get("fromid")
@@ -177,14 +208,20 @@ def createAssignment():
         
         desc = flask.request.form.get("desc")
 
-        userIDfor = flask.request.form.get("forid")
-        userDataFor = ctr.fetchUserByID(userIDfor)
-        emailfor = userDataFor[3]
+        if not flask.request.form.get("outsideDBcheck"):
+            userIDfor = flask.request.form.get("targetID")
+            userDataFor = ctr.fetchUserByID(userIDfor)
+            emailfor = userDataFor[3]
+            foranyone= False
+        else:
+            emailfor = flask.request.form.get("targetEmail")
+            userIDfor = "0"
+            foranyone= True
 
         # emailfor = flask.request.form.get("emailfor")
 
         duedate = flask.request.form.get("duedate").replace(":","-").replace("T","-")
-        newAssignID  = ctr.createAssignment(title=title,desc=desc,duedate=duedate,userfrom=userIDfrom,userfor=userIDfor,emailfrom=emailfrom,emailfor=emailfor)
+        newAssignID  = ctr.createAssignment(title=title,desc=desc,duedate=duedate,userfrom=userIDfrom,userfor=userIDfor,emailfrom=emailfrom,emailfor=emailfor,isForAnyone=foranyone)
 
         
         file_loc = os.path.join(varscollection.SUBMIT_FOLDER_PATH,f"{newAssignID}-v1")
@@ -223,6 +260,7 @@ def AssignmentHistory(assignmentID):
 def seeAssignment(assignmentID,version):
     # workID, version, state, title, desc, fol_name, create, due, laststatechange, from, for
     # 0       1        2      3      4     5         6       7    8               9      10
+    
 
     # Auth
     if not_logged_in():

@@ -162,7 +162,7 @@ def createAssignment():
         <!--<input name="emailfor" placeholder="Email for" ></input><br><br><br>-->
 
         <label for="outsideDBcheck">for user outside system</label>
-        <input type="checkbox" name="outsideDBcheck" id="outsideDBcheck" onchange="abbc()">
+        <input type="checkbox" name="outsideDBcheck" id="outsideDBcheck" onchange="abbc()" hidden>
         
         <br><br>
         <div id="changeTarget">

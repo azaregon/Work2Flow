@@ -3,7 +3,8 @@ import time
 import uuid
 import essentials as esn
 import varscollection 
-
+import userController
+import os
 
 
 DBFPATH = 'database.db'
@@ -87,6 +88,11 @@ def new_assignment(title:str,desc:str,duedateepoch:float,userfrom:str,userfor:st
 
     if isForAnyone:
         uniqueID += '-2b55r5cs'
+    # else: 
+    #     userExist = userController.fetch_user_by_email(emailfor)
+    #     if userExist[0] == "None":
+    #         return "ERR: Target user does not exist"
+    
 
     conn = sqlite3.connect(DBFPATH)
     cursor = conn.cursor()
@@ -98,10 +104,17 @@ def new_assignment(title:str,desc:str,duedateepoch:float,userfrom:str,userfor:st
     res = cursor.execute(command)
     conn.commit()
 
+    # folder creating
+    file_loc = os.path.join(varscollection.SUBMIT_FOLDER_PATH,f"{uniqueID}-v1")
+    
+    if not os.path.exists(file_loc):
+        os.mkdir(file_loc)
+
+
     esn.send_email(to_=[emailfor],subject="Assignment",msg=f""" New assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{uniqueID}/1?ID={userfor} """)
     esn.send_email(to_=[emailfrom],subject="Assignment",msg=f""" New assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{uniqueID}/1?ID={userfrom} """)
 
-    return f"""{uniqueID}"""
+    return f"""{uniqueID}/1"""
     # return ("{uniqueID}", 1, 'diberikan', '{title}', '{desc}', '{folName}', {time.time()}, {duedateepoch}, 0, '{userfrom}', '{userfor}' )
     # return [uniqueID, 1, 'diberikan', title, desc, folName, time.time(), duedateepoch, 0, userfrom, userfor,emailfrom, emailfor ]
 
@@ -146,8 +159,14 @@ def new_revision(AssignmentID,lastVersion,desc:str,duedateepoch:float,usrIDreque
         INSERT INTO {TABLENAME} values ("{AssignmentID}", {newVersion}, 'DIBERIKAN', '{title}', '{desc}', '{folName}', {time.time()}, {duedateepoch}, 0, '{userfrom}', '{userfor}', '{emailfrom}','{emailfor}'  )
     '''
     res = cursor.execute(command)
-
     conn.commit()
+
+    file_loc = os.path.join(varscollection.SUBMIT_FOLDER_PATH,f"{AssignmentID}-v{newVersion}")
+        
+    if not os.path.exists(file_loc):
+        os.mkdir(file_loc)
+
+
     esn.send_email(to_=[emailfor],subject="Assignment",msg=f""" New revision request of your assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{AssignmentID}/{newVersion}?ID={userfor} """)
     esn.send_email(to_=[emailfrom],subject="Assignment",msg=f""" New revision request of your assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{AssignmentID}/{newVersion}?ID={userfrom} """)
 

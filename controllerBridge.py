@@ -51,6 +51,33 @@ def createAssignment(title:str,desc:str,duedate:str,userfrom:str,userfor:str,ema
 
     res = mainControl.new_assignment(title,desc,epochdue,userfrom,userfor,emailfor=emailfor,emailfrom=emailfrom,isForAnyone=isForAnyone)
     return res 
+
+def createAssignmentByRegisteredTargetEmail(title:str,desc:str,duedate:str,userfrom:str,emailfor:str):
+    year,month,day,hour,minute = tuple(duedate.split("-"))
+    #date to epoch
+    epochdue = datetime.datetime(int(year),int(month),int(day),int(hour),int(minute)).timestamp()
+    
+    userDataFrom = fetchUserByID(userfrom)
+    userDataFor = fetchUserByEmail(emailfor)
+
+    if userDataFrom[0] == userDataFor[0]:
+        return "ERR: Giver and Receiver cannot be the same person"
+    
+    if userDataFor[0] == "None":
+        return "ERR: Target user does not exist"
+
+    res = mainControl.new_assignment(title=title,desc=desc,duedateepoch=epochdue,userfrom=userfrom,userfor=userDataFor[0],emailfrom=userDataFrom[3],emailfor=emailfor,isForAnyone=False)
+    return res 
+
+def createAssignmentByRegisteredTargetID(title:str,desc:str,duedate:str,userfrom:str,userfor:str,emailfrom:str,emailfor:str,isForAnyone:bool=False):
+    print(duedate)
+    year,month,day,hour,minute = tuple(duedate.split("-"))
+
+    #date to epoch
+    epochdue = datetime.datetime(int(year),int(month),int(day),int(hour),int(minute)).timestamp()
+
+    res = mainControl.new_assignment(title,desc,epochdue,userfrom,userfor,emailfor=emailfor,emailfrom=emailfrom,isForAnyone=isForAnyone)
+    return res 
     
 
 def newRevision(AssignmentID:int,lastversion:int,desc:str,duedate:str,user):

@@ -52,6 +52,6 @@ if __name__ == '__main__':
     # userRegistration("Ananda","aza@domain.com","A normal student","Satu2.")
     # userRegistration("Arya","cra@domain.org","A normal student too","Satu23")
 
-    print(fetch_user_by_email("cra@domain.org"))
+    print(fetch_user_by_email("cr@domain.org"))
     # print(getUserDetailsByID("f466c5ad-d1f6-45d9-987b-f92598222f70"))
     pass

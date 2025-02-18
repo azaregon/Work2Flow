@@ -22,13 +22,15 @@ app.secret_key = '98as12uayvwnoasm8as9das3dsas2wqeyw4cweqw7ec6qw98ewc69cqw8ne2cq
 #         return 
 
 def not_logged_in():
-    print(flask.session.get("ID"))
+    print(str(flask.session.get("ID")))
     return flask.session.get("ID") == None
         # return flask.redirect("/login")
 
      
 @app.route('/')
 def home():
+    print(not_logged_in())
+    print(flask.session['ID'],flask.session['EMAIL'])
     if not_logged_in():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
     
@@ -48,13 +50,14 @@ def home():
                     <td>{unfinishedData[2]}</td>
                     <td>{unfinishedData[3]}</td>
                     <td>{datetime.fromtimestamp(unfinishedData[7]).strftime('%Y-%m-%d %H:%M:%S')}</td>
-                    <td>{ctr.fetchUserByID(unfinishedData[9])[2]}</td>
+                    <td>{ctr.fetchUserByID(str(unfinishedData[9]))[2]}</td>
                     <td>{f'<a href="{varscollection.BASE_PATH}/Assignment/{unfinishedData[0]}/{unfinishedData[1]}?ID={requesterID}"> Link </a>'}
                 </tr>
             """
 
     return f''' 
-        <h1>welcome {requesterData[2]} </h1><br>
+        <h1>welcome {requesterData[2]} </h1>
+        <a href="{varscollection.BASE_PATH}/logout">logout</a><br><br>
         <div style="display:flex; gap:20px">
             <a href="{varscollection.BASE_PATH}/CreateAssignment"> Create new assignment</a>      
             <!--<a href="{varscollection.BASE_PATH}/assignmenttoother"> See your assignment to other</a>-->  
@@ -95,6 +98,7 @@ def login():
 
             <input type="submit"  value="Login"></input>
         </form>
+        <br> <span>{flask.get_flashed_messages()}</span>
                 '''
     elif flask.request.method == 'POST':
         # print('LOGG')
@@ -110,16 +114,17 @@ def login():
         # [ID, PW, Name, Email, Desc]
 
         if loginPW != userData[1]:
+            flask.flash("email or password not match")
             return flask.redirect(f'{varscollection.BASE_PATH}/login')
 
 
 
         flask.session['ID'] = userData[0]
-        flask.session['EMAIL'] = userData[1]
+        flask.session['EMAIL'] = userData[3]
         
 
 
-        return flask.redirect('/')
+        return flask.redirect(f'{varscollection.BASE_PATH}/')
 
 
 @app.route("/dwnld/<assignmentID>/<version>/<filename>")
@@ -148,8 +153,8 @@ def createAssignment():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
     
     if flask.request.method == "GET":
-        return '''
-        <body>
+        return f'''
+        <body onload="OLoad()">
         <form method="post">
         
         <!--<input name="fromid" placeholder="Your id" ></input><br><br><br>-->
@@ -158,78 +163,75 @@ def createAssignment():
         <input name="title" placeholder="Title.."></input><br><br>
         <textarea name="desc" placeholder="Desc.."></textarea><br><br>
         
-        <!--<input name="forid" placeholder="Target id" ></input><br><br><br>-->
+        <!--<input name="" placeholder="Target id" ></input><br><br><br>-->
         <!--<input name="emailfor" placeholder="Email for" ></input><br><br><br>-->
 
-        <label for="outsideDBcheck">for user outside system</label>
-        <input type="checkbox" name="outsideDBcheck" id="outsideDBcheck" onchange="abbc()" hidden>
+        <label for="outsideDBcheck" hidden>for user outside system</label>
+        <input type="checkbox" name="outsideDBcheck" id="outsideDBcheck" hidden>
         
         <br><br>
         <div id="changeTarget">
-            <input type="text" name="targetID" id="tgtID" placeholder="enter receiver ID" >
-            <input type="email" name="targetEmail" id="tgtEM" placeholder="enter receiver email" hidden>
+            <!--<input type="text" name="targetID" id="tgtID" placeholder="enter receiver ID" >-->
+            <input type="email" name="targetEmail" id="tgtEM" placeholder="enter receiver email" >
         </div>
 
-        <input name="duedate" id="duedate" type="datetime-local"  /><br><br>
+        <input name="duedate" id="duedate" type="datetime-local"   /><br><br>
 
 
         <button type="submit">Submit</button>
         </form>
 
-
-        <script>
-
-            function abbc() {   
-            forOutsideDB = document.querySelector("#outsideDBCheck").checked
-            if (forOutsideDB) {
-                document.querySelector("#tgtEM").hidden = false;
-                document.querySelector("#tgtEM").value ="";
-                document.querySelector("#tgtID").hidden = true;
-                document.querySelector("#tgtID").value = "";
-            } else {
-                document.querySelector("#tgtEM").hidden = true;
-                document.querySelector("#tgtEM").value = "";
-                document.querySelector("#tgtID").hidden = false;
-                document.querySelector("#tgtID").value = "";
-            
-            }
-            }
-        </script>
+        <br><br>
+        <div id="messages">
+            <span>{flask.get_flashed_messages() if len(flask.get_flashed_messages()) > 0 else ""}</span>
+        <div>
         
+        <script>
+            function OLoad() {{
+                var a = new Date();
+                var a = new Date(a - (a.getTimezoneOffset() * 60 * 1000) + 1000*60*60*24*2);
+                a.setSeconds(null);
+                a.setMilliseconds(null);
+                document.querySelector('#duedate').value = a.toISOString().slice(0,-1)
+
+            }}
+        </script>
         </body>
         '''
     elif flask.request.method == "POST":
         # userIDfrom = flask.request.form.get("fromid")
         # emailfrom = flask.request.form.get("emailfrom")
-        userIDfrom = flask.session.get("ID")
-        emailfrom = flask.session.get("EMAIL")
+        userIDfrom = str(flask.session.get("ID"))
+        # emailfrom = flask.session.get("EMAIL")
         
         title = flask.request.form.get("title")
         
         desc = flask.request.form.get("desc")
 
-        if not flask.request.form.get("outsideDBcheck"):
-            userIDfor = flask.request.form.get("targetID")
-            userDataFor = ctr.fetchUserByID(userIDfor)
-            emailfor = userDataFor[3]
-            foranyone= False
-        else:
-            emailfor = flask.request.form.get("targetEmail")
-            userIDfor = "0"
-            foranyone= True
-
+        duedate = flask.request.form.get("duedate").replace(":","-").replace("T","-")
         # emailfor = flask.request.form.get("emailfor")
 
-        duedate = flask.request.form.get("duedate").replace(":","-").replace("T","-")
-        newAssignID  = ctr.createAssignment(title=title,desc=desc,duedate=duedate,userfrom=userIDfrom,userfor=userIDfor,emailfrom=emailfrom,emailfor=emailfor,isForAnyone=foranyone)
+        if not flask.request.form.get("outsideDBcheck"):
+            userEmailFor = flask.request.form.get("targetEmail")
+            foranyone= False
+        else: # For later use
+            userEmailFor = flask.request.form.get("targetEmail")
+            foranyone= True
+
+        createResult  = ctr.createAssignmentByRegisteredTargetEmail(title=title,desc=desc,duedate=duedate,userfrom=userIDfrom,emailfor=userEmailFor)
+
+        if createResult[:3] == "ERR":
+            flask.flash(createResult)
+            return flask.redirect(f'{varscollection.BASE_PATH}/CreateAssignment')
+            # return f'''
+            #     <h3> Target user not found </h3><br>
+            #     <a href="{varscollection.BASE_PATH}/CreateAssignment">Back</a>
+            # '''
 
         
-        file_loc = os.path.join(varscollection.SUBMIT_FOLDER_PATH,f"{newAssignID}-v1")
-        
-        if not os.path.exists(file_loc):
-            os.mkdir(file_loc)
 
-        return f'''{newAssignID}/1'''
+        # return f'''{createResult}'''
+        return flask.redirect(f'{varscollection.BASE_PATH}/Assignment/{createResult}/AdminView')
 
 
 @app.route('/AssignmentHistory/<assignmentID>')
@@ -240,7 +242,7 @@ def AssignmentHistory(assignmentID):
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
 
     # requesterID = str(flask.request.args.get("ID"))
-    requesterID = str(flask.sessions.get("ID"))
+    requesterID = str(flask.session.get("ID"))
 
     print(requesterID)
     result = ctr.AssignmentHistory(assignmentID=assignmentID,user=requesterID)
@@ -310,36 +312,11 @@ def seeAssignment(assignmentID,version):
     
 
 
-    if accesserID == str(result[9]) and str(result[2]).upper() == 'MENUNGGU-REVIEW':
-        template = f'''{baseTemplate}<br><br><br><br><br>
-            <style>
-                #reviseToggle + #reviseForm {{ display:none;}}
-                #reviseToggle:checked + #reviseForm {{ display:block;}}
-            </style>
-            <form id="reviseForm" method="post" action="{varscollection.BASE_PATH}/acceptSubmis">
-                <input type="hidden" name="submitterID" value="{accesserID}"></input>
-                <input type="hidden" name="aid" value="{result[0]}"></input>
-                <input type="hidden" name="ver" value="{result[1]}"></input>
-               
-                <button type="submit" name="feedback" value="AcceptSubmission">Mark assignment done</button> 
-            </form>
-
-            <input id="reviseToggle" name="reviseToggle" type="checkbox">
-                <label for="reviseToggle">Add Revision</label> 
-            </input><br>
-            <form id="reviseForm" method="post" action="{varscollection.BASE_PATH}/revise">
-                <input type="hidden" name="requesterID" value="{accesserID}"></input>
-                <input type="hidden" name="aid" value="{result[0]}"></input>
-                <input type="hidden" name="ver" value="{result[1]}"></input>
-                <br><br>
-                <div style="border: 2px solid black; padding:10px;"  >
-                    <textarea name="desc" placeholder="Desc.."></textarea><br><br>
-                    <input name="duedate" id="duedate" type="datetime-local" /><br><br>
-                </div>
-                
-                <button type="submit" name="feedback" value="Revise">Revise</button> 
-            </form>
-        '''
+    if accesserID == str(result[9]) :
+       template = f''' {baseTemplate}<br><br>
+                    <a href="{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}/AdminView">Go to admin view</a>
+       
+       '''
     elif accesserID == str(result[10]) and str(result[2]).upper() == 'DIBERIKAN':
         template = f'''{baseTemplate}<br><br><br><br><br>
             <form method="post" action="{varscollection.BASE_PATH}/acceptassignment">
@@ -377,6 +354,111 @@ def seeAssignment(assignmentID,version):
     return template
 
 
+@app.route("/Assignment/<assignmentID>/<version>/AdminView")
+def seeAssignmentAdmin(assignmentID,version):
+    # workID, version, state, title, desc, fol_name, create, due, laststatechange, from, for
+    # 0       1        2      3      4     5         6       7    8               9      10
+    
+
+    # Auth
+    if not_logged_in():
+        return flask.redirect(f'{varscollection.BASE_PATH}/login')
+
+    # accesserID = str(flask.request.args.get('ID'))
+    accesserID = str(flask.session.get('ID'))
+
+
+    print(accesserID)
+
+
+    #get info
+    # result = dbManager.get_work_details(workID=workID,version=ver)
+    result = ctr.seeAssignment(assignmentID=assignmentID,ver=version,userID=accesserID)
+
+    # print(accesserID,result[9],result[10])
+    if result[2]  == "Permission Denied":
+        return f'''
+            <h1>Permission Denied</h1>
+        '''
+    
+    #file listing
+
+    fileList = os.listdir(os.path.join(varscollection.SUBMIT_FOLDER_PATH,f'''{assignmentID}-v{version}'''))
+    fileListHTML = """"""
+    for filename in fileList:
+        fileListHTML += f"""
+            <li><a href="{varscollection.BASE_PATH}/dwnld/{assignmentID}/{version}/{filename}?ID={accesserID}">{filename}</a></li>
+        """
+
+
+    baseTemplate = f'''
+        <h1>{result[3]}-v{result[1]}</h1>
+
+        <a href="{varscollection.BASE_PATH}/AssignmentHistory/{assignmentID}?ID={accesserID}"> see other version</a>
+
+        <h2>{result[4]}</h2>
+
+        <ul>
+            {fileListHTML}
+        </ul>
+
+    '''
+
+    template = f'''{baseTemplate}'''
+    
+
+
+    if accesserID == str(result[9]) and str(result[2]).upper() == 'MENUNGGU-REVIEW':
+        template = f'''{baseTemplate}<br><br><br><br><br>
+            <style>
+                #reviseToggle + #reviseForm {{ display:none;}}
+                #reviseToggle:checked + #reviseForm {{ display:block;}}
+            </style>
+            <form id="reviseForm" method="post" action="{varscollection.BASE_PATH}/acceptSubmis">
+                <input type="hidden" name="submitterID" value="{accesserID}"></input>
+                <input type="hidden" name="aid" value="{result[0]}"></input>
+                <input type="hidden" name="ver" value="{result[1]}"></input>
+               
+                <button type="submit" name="feedback" value="AcceptSubmission">Mark assignment done</button> 
+            </form>
+
+            <input id="reviseToggle" name="reviseToggle" type="checkbox">
+                <label for="reviseToggle">Add Revision</label> 
+            </input><br>
+            <form id="reviseForm" method="post" action="{varscollection.BASE_PATH}/revise">
+                <input type="hidden" name="requesterID" value="{accesserID}"></input>
+                <input type="hidden" name="aid" value="{result[0]}"></input>
+                <input type="hidden" name="ver" value="{result[1]}"></input>
+                <br><br>
+                <div style="border: 2px solid black; padding:10px;"  >
+                    <textarea name="desc" placeholder="Desc.."></textarea><br><br>
+                    <input name="duedate" id="duedate" type="datetime-local" /><br><br>
+                </div>
+                
+                <button type="submit" name="feedback" value="Revise">Revise</button> 
+            </form>
+        '''
+    elif accesserID == str(result[9]):
+        return baseTemplate
+    elif accesserID == str(result[10]):
+        template =  f'''
+            you are not permitted to see the admin page, go here to see yours<br>
+            <a href="{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}">GO here</a>
+        '''
+    else:
+        return ''' you are not related with this assignement'''
+
+        # template = f'''{baseTemplate}<br><br><br><br><br>
+        #     <form>
+        #         <button type="submit" name="feedback" value="Accept">Accept</button> 
+        #     </form>
+        # '''
+
+        
+
+    return template
+
+
 
 @app.route('/acceptassignment',methods=['POST','GET'])
 def acceptAssignment():
@@ -384,7 +466,7 @@ def acceptAssignment():
     if not_logged_in():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
 
-    userID = flask.session.get("ID")
+    userID = str(flask.session.get("ID"))
     # userID = flask.request.form.get("requesterID")
 
     aid = flask.request.form.get("aid")
@@ -403,7 +485,7 @@ def createRevision():
 
     if flask.request.method == "POST":
         # requesterID = flask.request.form.get("requesterID")
-        requesterID = flask.session.get("ID")
+        requesterID = str(flask.session.get("ID"))
 
         assignmentID = flask.request.form.get("aid")
         version = int(flask.request.form.get("ver"))
@@ -414,10 +496,6 @@ def createRevision():
         if result[:3] == "ERR":
             return result
 
-        file_loc = os.path.join(varscollection.SUBMIT_FOLDER_PATH,f"{assignmentID}-v{version+1}")
-        
-        if not os.path.exists(file_loc):
-            os.mkdir(file_loc)
 
         # return f'''{newAssignID}/{int(version)+1}'''
         return flask.redirect(f"{varscollection.BASE_PATH}/Assignment/{result}?ID={requesterID}")
@@ -436,7 +514,7 @@ def submitFiles():
         version = flask.request.form.get("ver")
         
         # submitterID = flask.request.form.get("submitterID")
-        submitterID = flask.session.get("ID")
+        submitterID = str(flask.session.get("ID"))
 
         
         # print('fileup' in flask.request.files)
@@ -476,7 +554,7 @@ def acceptSubmis():
         assignmentID = flask.request.form.get("aid")
         version = flask.request.form.get("ver")
         # sumbisFinishAcceptID = flask.request.form.get("submitterID")
-        sumbisFinishAcceptID = flask.session.get("ID")
+        sumbisFinishAcceptID = str(flask.session.get("ID"))
         
         print(sumbisFinishAcceptID)
         result = ctr.acceptsubmit(AssignmentID=assignmentID,version=version,usrIDacceptsubmit=str(sumbisFinishAcceptID))

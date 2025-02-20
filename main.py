@@ -30,10 +30,10 @@ def not_logged_in():
 @app.route('/')
 def home():
     print(not_logged_in())
-    print(flask.session['ID'],flask.session['EMAIL'])
     if not_logged_in():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
     
+    print(flask.session['ID'],flask.session['EMAIL'])
     requesterID = str(flask.session.get("ID"))
     requesterData = ctr.fetchUserByID(requesterID)
 
@@ -57,6 +57,8 @@ def home():
 
     return f''' 
         <h1>welcome {requesterData[2]} </h1>
+        <a href="{varscollection.BASE_PATH}/Profile">Your profile</a>
+        <span> -- -- </span>
         <a href="{varscollection.BASE_PATH}/logout">logout</a><br><br>
         <div style="display:flex; gap:20px">
             <a href="{varscollection.BASE_PATH}/CreateAssignment"> Create new assignment</a>      
@@ -85,20 +87,38 @@ def home():
         
             '''
 
+
+
 @app.route('/login', methods=['GET','POST'])
 def login():
     if flask.request.method == 'GET':
         return  f'''
-        <form action="{varscollection.BASE_PATH}/login" method="post">
-            
-            <!--<input name="id" placeholder="Enter your ID"></input>-->
+        <body onload="OLoad()">
+            <form action="{varscollection.BASE_PATH}/login" method="post">
+                
+                <!--<input name="id" placeholder="Enter your ID"></input>-->
 
-            <input name="email" placeholder="Enter your Email"></input>
-            <input type="password" name="password" placeholder="Pwd"></input>
+                <input name="email" id="Emailinp" placeholder="Enter your Email"></input>
+                <input type="password" id="PWDinp" name="password" placeholder="Pwd"></input>
 
-            <input type="submit"  value="Login"></input>
-        </form>
-        <br> <span>{flask.get_flashed_messages()}</span>
+                <input type="submit"  value="Login"></input>
+            </form>
+            <script>
+                function qSelect(query) {{
+                    return document.querySelector(query)
+                }}
+
+                function OLoad() {{
+                    const queryString = window.location.search;
+                    const urlParams = new URLSearchParams(queryString);
+                    qSelect("#Emailinp").value = urlParams.get('beforeEmail'); 
+                    window.history.replaceState({{}}, document.title,   window.location.origin + window.location.pathname);
+
+                }}
+            </script>
+
+            <br> <span>{flask.get_flashed_messages()}</span>
+        </body>
                 '''
     elif flask.request.method == 'POST':
         # print('LOGG')
@@ -115,7 +135,7 @@ def login():
 
         if loginPW != userData[1]:
             flask.flash("email or password not match")
-            return flask.redirect(f'{varscollection.BASE_PATH}/login')
+            return flask.redirect(f'{varscollection.BASE_PATH}/login?beforeEmail={loginEmail}')
 
 
 
@@ -160,22 +180,22 @@ def createAssignment():
         <!--<input name="fromid" placeholder="Your id" ></input><br><br><br>-->
         <!--<input name="emailfrom" placeholder="Email you" ></input><br><br><br>-->
 
-        <input name="title" placeholder="Title.."></input><br><br>
-        <textarea name="desc" placeholder="Desc.."></textarea><br><br>
+        <input name="title" id="AsgTitle" placeholder="Title.."></input><br><br>
+        <textarea name="desc" id="AsgDesc" placeholder="Desc.."></textarea><br><br>
         
         <!--<input name="" placeholder="Target id" ></input><br><br><br>-->
         <!--<input name="emailfor" placeholder="Email for" ></input><br><br><br>-->
 
-        <label for="outsideDBcheck" hidden>for user outside system</label>
+        <!--<label for="outsideDBcheck" hidden>for user outside system</label>-->
         <input type="checkbox" name="outsideDBcheck" id="outsideDBcheck" hidden>
         
         <br><br>
-        <div id="changeTarget">
-            <!--<input type="text" name="targetID" id="tgtID" placeholder="enter receiver ID" >-->
-            <input type="email" name="targetEmail" id="tgtEM" placeholder="enter receiver email" >
-        </div>
 
-        <input name="duedate" id="duedate" type="datetime-local"   /><br><br>
+        <!--<input type="text" name="targetID" id="tgtID" placeholder="enter receiver ID" >-->
+        <input type="email" name="targetEmail" id="tgtEM" placeholder="enter receiver email" ><br>
+
+
+        <input name="duedate" id="AsgDuedate" type="datetime-local"   /><br><br>
 
 
         <button type="submit">Submit</button>
@@ -187,12 +207,26 @@ def createAssignment():
         <div>
         
         <script>
+            function qSelect(query) {{
+                return document.querySelector(query)
+            }}
+
             function OLoad() {{
                 var a = new Date();
                 var a = new Date(a - (a.getTimezoneOffset() * 60 * 1000) + 1000*60*60*24*2);
                 a.setSeconds(null);
                 a.setMilliseconds(null);
-                document.querySelector('#duedate').value = a.toISOString().slice(0,-1)
+                document.querySelector('#AsgDuedate').value = a.toISOString().slice(0,-1);
+
+
+                const queryString = window.location.search;
+                const urlParams = new URLSearchParams(queryString);
+                qSelect("#AsgTitle").value = urlParams.get('titleBefore'); 
+                qSelect("#AsgDesc").value = urlParams.get('descBefore');
+                if (urlParams.get('dueDateBefore') != null){{
+                    qSelect("#AsgDuedate").value = urlParams.get('dueDateBefore');
+                }} 
+                window.history.replaceState({{}}, document.title,   window.location.origin + window.location.pathname);
 
             }}
         </script>
@@ -208,7 +242,8 @@ def createAssignment():
         
         desc = flask.request.form.get("desc")
 
-        duedate = flask.request.form.get("duedate").replace(":","-").replace("T","-")
+        duedatePure = flask.request.form.get("duedate")
+        duedate = duedatePure.replace(":","-").replace("T","-")
         # emailfor = flask.request.form.get("emailfor")
 
         if not flask.request.form.get("outsideDBcheck"):
@@ -222,7 +257,7 @@ def createAssignment():
 
         if createResult[:3] == "ERR":
             flask.flash(createResult)
-            return flask.redirect(f'{varscollection.BASE_PATH}/CreateAssignment')
+            return flask.redirect(f'{varscollection.BASE_PATH}/CreateAssignment?dueDateBefore={duedatePure}&descBefore={desc}&titleBefore={title}')
             # return f'''
             #     <h3> Target user not found </h3><br>
             #     <a href="{varscollection.BASE_PATH}/CreateAssignment">Back</a>
@@ -614,12 +649,89 @@ def assignmentToOther():
         </table>
     """
 
+@app.route("/Profile")
+def seeProfile():
+    userData = ctr.fetchUserByID(flask.session.get("ID"))
+    return f'''
+    <body>
+        <h1>Profile page</h1>
+        <a href="{varscollection.BASE_PATH}/updateProfile">Edit profile</a>
+
+        <ul>
+            <li><b>name:</b> {userData[2]}</li>
+            <li><b>email:</b> {userData[3]}</li>
+            <li><b>desc:</b> {userData[4]}</li>
+        </ul>
+        
+    </body>
+
+    '''
+
+
+@app.route('/updateProfile',methods=['GET','POST'])
+def updateProfile():
+
+    if flask.request.method == 'GET':
+        return f'''
+            <body>
+                <h1>Edit Profile</h1>
+                <span> enter only you want to edit</span><br>
+
+                <form action="{varscollection.BASE_PATH}/updateProfile" method="post">
+                
+                    <input name="newName" id="newName" placeholder="enter new name"></input><br><br>
+                    <input type="email" name="newEmail" id="newEmail" placeholder="enter new email"></input><br><br>
+                    <textarea name="newDesc" id="newDesc" placeholder="enter new desc"></textarea><br><br>
+                    <input type="submit"></input>
+                </form>
+
+                <script>
+                    function qSelect(query) {{
+                        return document.querySelector(query)
+                    }}
+
+                    function OLoad() {{
+                        const queryString = window.location.search;
+                        const urlParams = new URLSearchParams(queryString);
+                        qSelect("#newName").value = urlParams.get('newName'); 
+                        qSelect("#newEmail").value = urlParams.get('newEmail'); 
+                        qSelect("#newDesc").value = urlParams.get('newDesc'); 
+                        window.history.replaceState({{}}, document.title,   window.location.origin + window.location.pathname);
+
+                    }}
+                </script>
+            </body>
+        '''
+    elif flask.request.method == 'POST':
+        currUserData = ctr.fetchUserByID(flask.session.get('ID'))
+
+        newName = flask.request.form.get("newName")
+
+        newEmail = flask.request.form.get("newEmail")
+
+        newDesc = flask.request.form.get("newDesc")
+
+        print(newName,newEmail,newDesc)
+
+        res = ctr.userUpdateData(flask.session.get('EMAIL'),newName=newName,newDesc=newDesc,newEmail=newEmail)
+        print(res)
+        if res[:3] == "ERR":
+            return flask.redirect(f'{varscollection.BASE_PATH}/updateProfile?newName={newName}&newEmail={newEmail}&newDesc={newDesc}')
+
+        if newEmail != "":
+            flask.session['EMAIL'] = newEmail
+            
+        return flask.redirect(f'{varscollection.BASE_PATH}/Profile')
+
 
 
 @app.route('/logout')
 def logout():
     flask.session.clear()
     return flask.redirect(f'{varscollection.BASE_PATH}/login')
+
+
+
 
 
 if __name__ == '__main__':

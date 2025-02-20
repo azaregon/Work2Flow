@@ -116,6 +116,9 @@ def fetchUserByID(ID:str):
 def userRegistration(Name:str,Email:str,Desc:str,Password:str):
     userController.user_registration(Name=Name,Email=Email,Desc=Desc,Password=Password)
 
+def userUpdateData(emailForFetch:str,newName:str,newEmail:str,newDesc:str):
+    return userController.update_data(emailForFetch=emailForFetch,newName=newName,newEmail=newEmail,newDesc=newDesc)
+
 
 
 

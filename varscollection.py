@@ -8,3 +8,6 @@ SUBMIT_FOLDER_PATH = os.path.join(PY_FILE_DIR,"Submitted")
 # BASE_PATH = "/W2F"
 BASE_URL = "http://localhost:5000"
 BASE_PATH = ""
+
+HOST_IP = '0.0.0.0'
+HOST_PORT = 5000

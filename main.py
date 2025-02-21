@@ -57,16 +57,16 @@ def home():
 
     return f''' 
         <h1>welcome {requesterData[2]} </h1>
-        <a href="{varscollection.BASE_PATH}/Profile">Your profile</a>
+        <a href="{varscollection.BASE_PATH}/Profile">Profilmu</a>
         <span> -- -- </span>
         <a href="{varscollection.BASE_PATH}/logout">logout</a><br><br>
         <div style="display:flex; gap:20px">
-            <a href="{varscollection.BASE_PATH}/CreateAssignment"> Create new assignment</a>      
-            <!--<a href="{varscollection.BASE_PATH}/assignmenttoother"> See your assignment to other</a>-->  
+            <a href="{varscollection.BASE_PATH}/CreateAssignment"> Buat tugas baru</a>      
+            <!--<a href="{varscollection.BASE_PATH}/assignmenttoother"> Lihat tugas yang kamu berikan</a>-->  
         </div>
         <br><br><br>
 
-        <h3>Unfinished assignment:</h3> 
+        <h3>Tugas yang belum diselesaikan:</h3> 
         <style>
         table,td,th {{border:1px solid black; padding:2px}}
         </style>
@@ -96,10 +96,10 @@ def login():
         <body onload="OLoad()">
             <form action="{varscollection.BASE_PATH}/login" method="post">
                 
-                <!--<input name="id" placeholder="Enter your ID"></input>-->
+                <!--<input name="id" placeholder="Masukkan ID mu"></input>-->
 
-                <input name="email" id="Emailinp" placeholder="Enter your Email"></input>
-                <input type="password" id="PWDinp" name="password" placeholder="Pwd"></input>
+                <input name="email" id="Emailinp" placeholder="Masukkan Email-mu"></input>
+                <input type="password" id="PWDinp" name="password" placeholder="tuliskan Password"></input>
 
                 <input type="submit"  value="Login"></input>
             </form>
@@ -158,11 +158,12 @@ def download(assignmentID,version,filename):
 
     dbres = ctr.seeAssignment(assignmentID=assignmentID,ver=version,userID=downloaderID)
     if downloaderID != str(dbres[9]) and downloaderID != str(dbres[10]):
-        return '''Not permitted'''
+        # return '''Not permitted'''
+        return '''anda tidak memiliki akses'''
     try:
         return flask.send_file(os.path.join(varscollection.SUBMIT_FOLDER_PATH,f'''{assignmentID}-v{version}''',filename),as_attachment=True) # download the file
     except:
-        return '''file not found'''
+        return '''file tidak ditemukan'''
 
 
 
@@ -180,8 +181,8 @@ def createAssignment():
         <!--<input name="fromid" placeholder="Your id" ></input><br><br><br>-->
         <!--<input name="emailfrom" placeholder="Email you" ></input><br><br><br>-->
 
-        <input name="title" id="AsgTitle" placeholder="Title.."></input><br><br>
-        <textarea name="desc" id="AsgDesc" placeholder="Desc.."></textarea><br><br>
+        <input name="title" id="AsgTitle" placeholder="Judul tugas"></input><br><br>
+        <textarea name="desc" id="AsgDesc" placeholder="Deskripsi tugas"></textarea><br><br>
         
         <!--<input name="" placeholder="Target id" ></input><br><br><br>-->
         <!--<input name="emailfor" placeholder="Email for" ></input><br><br><br>-->
@@ -192,10 +193,10 @@ def createAssignment():
         <br><br>
 
         <!--<input type="text" name="targetID" id="tgtID" placeholder="enter receiver ID" >-->
-        <input type="email" name="targetEmail" id="tgtEM" placeholder="enter receiver email" ><br>
+        <input type="email" name="targetEmail" id="tgtEM" placeholder="masukkan email penerima tugas" ><br>
 
 
-        <input name="duedate" id="AsgDuedate" type="datetime-local"   /><br><br>
+        <label for="duedate">Berikan tenggat: </label><input name="duedate" id="AsgDuedate" type="datetime-local"   /><br><br>
 
 
         <button type="submit">Submit</button>
@@ -266,7 +267,7 @@ def createAssignment():
         
 
         # return f'''{createResult}'''
-        return flask.redirect(f'{varscollection.BASE_PATH}/Assignment/{createResult}/AdminView')
+        return flask.redirect(f'{varscollection.BASE_PATH}/Assignment/{createResult}/creatorview')
 
 
 @app.route('/AssignmentHistory/<assignmentID>')
@@ -283,7 +284,8 @@ def AssignmentHistory(assignmentID):
     result = ctr.AssignmentHistory(assignmentID=assignmentID,user=requesterID)
                                    
     if result == [0]:
-        return """ You have no access"""
+        # return """ You have no access"""
+        return """Anda tidak memiliki akses"""
 
     ret_temp = """"""
 
@@ -313,11 +315,15 @@ def seeAssignment(assignmentID,version):
     #get info
     # result = dbManager.get_work_details(workID=workID,version=ver)
     result = ctr.seeAssignment(assignmentID=assignmentID,ver=version,userID=accesserID)
+    giverData = ctr.fetchUserByID(result[9])
 
     print(accesserID,result[9],result[10])
     if result[2]  == "Permission Denied":
+        # return f'''
+        #     <h1>Permission Denied</h1>
+        # '''
         return f'''
-            <h1>Permission Denied</h1>
+            <h1>Akses ditolak</h1>
         '''
     
     #file listing
@@ -333,9 +339,12 @@ def seeAssignment(assignmentID,version):
     baseTemplate = f'''
         <h1>{result[3]}-v{result[1]}</h1>
 
-        <a href="{varscollection.BASE_PATH}/AssignmentHistory/{assignmentID}?ID={accesserID}"> see other version</a>
+        <a href="{varscollection.BASE_PATH}/AssignmentHistory/{assignmentID}?ID={accesserID}"> Lihat versi lain</a>
 
-        <h2>{result[4]}</h2>
+        <h2>{result[4]}</h2><br>
+        <span>dari: <b>{giverData[2]}</b> ||| status: <b>{result[2]}</b></span>
+
+
 
         <ul>
             {fileListHTML}
@@ -348,8 +357,9 @@ def seeAssignment(assignmentID,version):
 
 
     if accesserID == str(result[9]) :
+       return f"{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}/creatorview"
        template = f''' {baseTemplate}<br><br>
-                    <a href="{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}/AdminView">Go to admin view</a>
+                    <a href="{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}/creatorview">Pergi ke halaman untuk pembuat tugas</a>
        
        '''
     elif accesserID == str(result[10]) and str(result[2]).upper() == 'DIBERIKAN':
@@ -359,7 +369,7 @@ def seeAssignment(assignmentID,version):
                 <input type="hidden" name="aid" value="{result[0]}"></input>
                 <input type="hidden" name="ver" value="{result[1]}"></input>
 
-                <button type="submit" name="feedback" value="Accept">Accept assignment</button> 
+                <button type="submit" name="feedback" value="Accept">Terima tugas</button> 
             </form>
         '''
     elif accesserID == str(result[10]) and str(result[2]).upper() == 'DIKERJAKAN':
@@ -389,8 +399,8 @@ def seeAssignment(assignmentID,version):
     return template
 
 
-@app.route("/Assignment/<assignmentID>/<version>/AdminView")
-def seeAssignmentAdmin(assignmentID,version):
+@app.route("/Assignment/<assignmentID>/<version>/creatorview")
+def seeAssignmentAsCreator(assignmentID,version):
     # workID, version, state, title, desc, fol_name, create, due, laststatechange, from, for
     # 0       1        2      3      4     5         6       7    8               9      10
     
@@ -413,7 +423,7 @@ def seeAssignmentAdmin(assignmentID,version):
     # print(accesserID,result[9],result[10])
     if result[2]  == "Permission Denied":
         return f'''
-            <h1>Permission Denied</h1>
+            <h1>Akses ditolak</h1>
         '''
     
     #file listing
@@ -429,9 +439,10 @@ def seeAssignmentAdmin(assignmentID,version):
     baseTemplate = f'''
         <h1>{result[3]}-v{result[1]}</h1>
 
-        <a href="{varscollection.BASE_PATH}/AssignmentHistory/{assignmentID}?ID={accesserID}"> see other version</a>
+        <a href="{varscollection.BASE_PATH}/AssignmentHistory/{assignmentID}?ID={accesserID}">Lihat versi lain</a>
 
-        <h2>{result[4]}</h2>
+        <h2>{result[4]}</h2><br>
+        <span>status: <b>{result[2]}<b></span>
 
         <ul>
             {fileListHTML}
@@ -454,11 +465,11 @@ def seeAssignmentAdmin(assignmentID,version):
                 <input type="hidden" name="aid" value="{result[0]}"></input>
                 <input type="hidden" name="ver" value="{result[1]}"></input>
                
-                <button type="submit" name="feedback" value="AcceptSubmission">Mark assignment done</button> 
+                <button type="submit" name="feedback" value="AcceptSubmission">Tandai tugas selesai</button> 
             </form>
 
-            <input id="reviseToggle" name="reviseToggle" type="checkbox">
-                <label for="reviseToggle">Add Revision</label> 
+            <!--<input id="reviseToggle" name="reviseToggle" type="checkbox">-->
+                <label for="reviseToggle">Minta revisi</label> 
             </input><br>
             <form id="reviseForm" method="post" action="{varscollection.BASE_PATH}/revise">
                 <input type="hidden" name="requesterID" value="{accesserID}"></input>
@@ -467,21 +478,26 @@ def seeAssignmentAdmin(assignmentID,version):
                 <br><br>
                 <div style="border: 2px solid black; padding:10px;"  >
                     <textarea name="desc" placeholder="Desc.."></textarea><br><br>
-                    <input name="duedate" id="duedate" type="datetime-local" /><br><br>
+                    <label for="duedate">Berikan tenggat:</label><input name="duedate" id="duedate" type="datetime-local" /><br><br>
                 </div>
                 
-                <button type="submit" name="feedback" value="Revise">Revise</button> 
+                <button type="submit" name="feedback" value="Revise">Minta revisi</button> 
             </form>
         '''
     elif accesserID == str(result[9]):
         return baseTemplate
     elif accesserID == str(result[10]):
+        # template =  f'''
+        #     you are not permitted to see the admin page, go here to see yours<br>
+        #     <a href="{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}">GO here</a>
+        # '''
         template =  f'''
-            you are not permitted to see the admin page, go here to see yours<br>
+           Kamu tidak memiliki akses untuk melihat halaman "pembuat soal", gunakan link di bawah untuk melihat<br>
             <a href="{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}">GO here</a>
         '''
     else:
-        return ''' you are not related with this assignement'''
+        # return ''' you are not related with this assignement'''
+        return '''Kamu tidak memiliki kaitan dengan tugas ini '''
 
         # template = f'''{baseTemplate}<br><br><br><br><br>
         #     <form>
@@ -675,7 +691,7 @@ def updateProfile():
         return f'''
             <body>
                 <h1>Edit Profile</h1>
-                <span> enter only you want to edit</span><br>
+                <span> isi hanya yang ingin kamu edit</span><br>
 
                 <form action="{varscollection.BASE_PATH}/updateProfile" method="post">
                 
@@ -735,5 +751,5 @@ def logout():
 
 
 if __name__ == '__main__':
-    app.run(debug=1)
+    app.run(host=varscollection.HOST_IP,port=varscollection.HOST_PORT)
 

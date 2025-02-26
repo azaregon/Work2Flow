@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/da5943c57b.js" crossorigin="anonymous"></script>
+
+</head>
+<body onload="OLoad()">
+    <section class="hero">
+        <div class="hero-body">
+            <div class="box">
+                <h1 class="title">Log In</h1>
+                <form action="{varscollection.BASE_PATH}/login" method="post">
+                    
+                    <!--<input name="id" placeholder="Masukkan ID mu"></input>-->
+                    
+                    <label for="email" class="label">Email</label>
+                    <input type="email" email="email" id="Emailinp" class="input" placeholder="Masukkan Email-mu"></input>
+                    <br><br>
+                    <label for="password" class="label">Password</label>
+                    <input type="password" id="PWDinp" class="input" name="password" placeholder="tuliskan Password"></input> 
+                    <br><br>
+                    <span hidden>{flask.get_flashed_messages()}</span>
+                    <br><br>
+                    <input type="submit" class="button is-primary" value="Login"></input>
+                </form>
+            </div>
+
+        </div>
+    </section>
+
+
+
+    <script>
+        function qSelect(query) {
+            return document.querySelector(query)
+        }
+
+        function OLoad() {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            qSelect("#Emailinp").value = urlParams.get('beforeEmail'); 
+            window.history.replaceState({}, document.title,   window.location.origin + window.location.pathname);
+
+        }
+    </script>
+
+</body>
+</html>

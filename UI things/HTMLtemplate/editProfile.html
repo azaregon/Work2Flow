@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/da5943c57b.js" crossorigin="anonymous"></script>
+
+</head>
+<body class="m-4">
+    
+    <div class="hero-head mb-1">
+        <a class="button is-small"> < Back to profile</a>
+    </div>
+    
+
+    <section class="hero">
+        <div class="hero-body">
+            <h1 class="title ">Edit Profile</h1>
+            <span class=""> isi hanya yang ingin kamu edit</span><br>
+        </div>
+    </section>
+
+    <form action="{varscollection.BASE_PATH}/updateProfile" method="post">
+        
+        <label for="newName" class="label">new name:</label>
+        <input name="newName" id="newName" class="input" placeholder="enter new name"></input><br><br>
+
+        <label for="newName" class="label">new email:</label>
+        <input type="email" name="newEmail" class="input" id="newEmail" placeholder="enter new email"></input><br><br>
+
+        <label for="newName" class="label">new desc:</label>
+        <textarea name="newDesc" id="newDesc" class="input" placeholder="enter new desc"></textarea><br><br>
+        <div class="buttons is-right">
+            <input type="submit" class="button is-primary"></input>
+        </div>
+    </form>
+
+    <script>
+        function qSelect(query) {
+            return document.querySelector(query)
+        }
+
+        function OLoad() {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            qSelect("#newName").value = urlParams.get('newName'); 
+            qSelect("#newEmail").value = urlParams.get('newEmail'); 
+            qSelect("#newDesc").value = urlParams.get('newDesc'); 
+            window.history.replaceState({}, document.title,   window.location.origin + window.location.pathname);
+
+        }
+    </script>
+</body>
+</html>

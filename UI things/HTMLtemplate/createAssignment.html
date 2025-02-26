@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <title>Document</title>
+
+
+</head>
+<body>
+    <!-- <div class="columns is-flex is-vcentered has-background" sty>
+        <div class="column">aaaasasa</div>
+    </div> -->
+    <section class="hero is-fullheight m-2">
+        <div class="hero-head mb-1">
+            <a class="button is-small"> < Back to dashboard</a>
+        </div>
+        <div class="hero-body has-background has-text-centered">
+            <div class="container is-widescreen  ">
+                <div class="container has-text-justified">
+                    <section id="Pagetitle" class="section is-small ">
+                        <h1 class="title">Buat tugas baru</h1>
+                    </section>
+                    
+                    <br><br>
+                    <form method="post" class="form">
+                        
+                        <div id="Titleinp">
+                            <label for="title" class="label">Judul Tugas</label>
+                            <input name="title" class="input" id="AsgTitle" placeholder="Judul tugas"></input>
+                        </div>
+                        <br>
+                        <div id="Targetinp">
+                            <label for="targetEmail" class="label">Redipient's Email</label>
+                            <input type="email" name="targetEmail" id="tgtEM"  class="input" placeholder="masukkan email penerima tugas" ><br>
+                        </div>
+                        <br>
+                        <br>
+                        <div id="Descinp">
+                            <label for="desc" class="label"> Description</label>
+                            <textarea name="desc" id="AsgDesc" class="textarea" placeholder="Deskripsi tugas"></textarea>
+                        </div>
+                        
+                        <!-- <input type="checkbox" name="outsideDBcheck" id="outsideDBcheck" hidden> -->
+                        <br>
+                        
+
+                        <div id="Duedateinp" >
+                            <label for="duedate" class="label is-small">Berikan tenggat: </label>
+                            <input name="duedate" id="AsgDuedate" type="datetime-local"   /><br><br>
+                        </div>
+                        <button type="submit" class="button is-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

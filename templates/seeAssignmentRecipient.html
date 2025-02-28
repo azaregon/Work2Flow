@@ -12,81 +12,96 @@
 <body class="m-4">
 
     <div class=" my-5 hero-head mb-1">
-        <a class="button is-small"> < Back to dashboard</a>
+        <a class="button is-small" href="{{ BASE_PATH }}/"> < Back to dashboard</a>
     </div>
     <!-- <h1 class="title">{result[3]}-v{result[1]}</h1> -->
-    <h1 class="title">Title</h1>
-    <h6 class="subtitle is-6">Version: 2</h6>
+
+
+    <section class="container is-max-tablet">
+
+        <h1 class="title">{{ result[3] }}</h1>
+        <h6 class="subtitle is-6">version: {{ result[1] }}</h6>
+        
+        <a href="{{BASE_PATH}}/AssignmentHistory/{{assignmentID}}?ID={{accesserID}}"> Lihat versi lain</a>
+
+        <br><span>dari: <b>{{ giverData[2] }}</b> | status: <b>{{ result[2] }}</b></span> 
+        <!-- <br><span>dari: <b>Nanda</b> | status: <b>Diberikan</b></span> -->
     
-    <a href="{varscollection.BASE_PATH}/AssignmentHistory/{assignmentID}?ID={accesserID}"> Lihat versi lain</a>
-    <!-- <br><span>dari: <b>{giverData[2]}</b> | status: <b>{result[2]}</b></span> -->
-    <br><span>dari: <b>Nanda</b> | status: <b>Diberikan</b></span>
-
-    <div class="content">
-
-        <section class="section has-text-justified">
-            <!-- <h2>{result[4]}</h2><br> -->
-            <p class="">Anda diharuskan untuk membuat a,b,c dengan framework d,e,f juga jangan lupa untum membagi tugas dengan f,g,h</p><br>
-        </section>
-        
-        
-        <h6 class="subtitle is-6">File Available:</h6>
-        <ul>
-            <li><a href="{varscollection.BASE_PATH}/dwnld/{assignmentID}/{version}/{filename}?ID={accesserID}">satu.pdf</a></li>
-            <li><a href="{varscollection.BASE_PATH}/dwnld/{assignmentID}/{version}/{filename}?ID={accesserID}">dua.xslx</a></li>
-            <li><a href="{varscollection.BASE_PATH}/dwnld/{assignmentID}/{version}/{filename}?ID={accesserID}">tiga.docx</a></li>
+        <div class="content">
+    
+            <section class="section has-text-justified">
+                <!-- <h2>{result[4]}</h2><br> -->
+                <!--<p class="">Anda diharuskan untuk membuat a,b,c dengan framework d,e,f juga jangan lupa untum membagi tugas dengan f,g,h</p><br> #}
+                -->
+                <span>Deskripsi: </span>
+                <p >{{ result[4] }}</p><br>
+            </section>
             
-        </ul>
+            
+            <h6 class="subtitle is-6">File Available:</h6>
+            <ul>
+                {{ fileListHTML|safe }}
+                <!-- 
+                <li><a href="{varscollection.BASE_PATH}/dwnld/{assignmentID}/{version}/{filename}?ID={accesserID}">satu.pdf</a></li>
+                <li><a href="{varscollection.BASE_PATH}/dwnld/{assignmentID}/{version}/{filename}?ID={accesserID}">dua.xslx</a></li>
+                <li><a href="{varscollection.BASE_PATH}/dwnld/{assignmentID}/{version}/{filename}?ID={accesserID}">tiga.docx</a></li>
+                --> 
+            </ul>
+            
+        </div>
+        {% if (result[2]|string).upper() == 'DIBERIKAN' %}
         
-    </div>
-
-    <!-- <div class="" id="ifDiberikan">
-        <form method="post" action="{varscollection.BASE_PATH}/acceptassignment">
-            <input type="hidden" name="requesterID" value="{accesserID}"></input>
-            <input type="hidden" name="aid" value="{result[0]}"></input>
-            <input type="hidden" name="ver" value="{result[1]}"></input>
-            <div class="buttons is-right">
-                <button type="submit" name="feedback" class="button is-primary" value="Accept">Terima tugas</button> 
-            </div>
-        </form>
-    </div> -->
+        <div class="" id="ifDiberikan">
+            <form method="post" action="{{BASE_PATH}}/acceptassignment">
+                <input type="hidden" name="requesterID" value="{{accesserID}}"></input>
+                <input type="hidden" name="aid" value="{{result[0]}}"></input>
+                <input type="hidden" name="ver" value="{{result[1]}}"></input>
+                <div class="buttons is-right">
+                    <button type="submit" name="feedback" class="button is-primary" value="Accept">Terima tugas</button> 
+                </div>
+            </form>
+        </div>
+        
+        {% elif (result[2]|string).upper() == 'DIKERJAKAN' %}
+        <div id="ifDikerjakan">
+            <form method="post" action="{{BASE_PATH}}/submitfiles" enctype="multipart/form-data">
+                <input type="hidden" name="submitterID" value="{{accesserID}}"></input>
+                <input type="hidden" name="aid" value="{{ result[0] }}"></input>
+                <input type="hidden" name="ver" value="{{ result[1] }}"></input>
     
-    <!-- <div id="ifDikerjakan">
-        <form method="post" action="{varscollection.BASE_PATH}/submitfiles" enctype="multipart/form-data">
-            <input type="hidden" name="submitterID" value="{accesserID}"></input>
-            <input type="hidden" name="aid" value="{result[0]}"></input>
-            <input type="hidden" name="ver" value="{result[1]}"></input>
-
-            <div class="file is-normal is-boxed is-centered has-name" id="fileSubmisdiv">
-                <label class="file-label">
-                  <input type="file" class="file-input" name="fileup" id="fileSubmis" multiple required />
-                  <span class="file-cta">
-                    <span class="file-icon">
-                      <i class="fas fa-upload"></i>
-                    </span>
-                    <span class="file-label"> Upload pekerjaanmu...</span>
-                  </span>
-                  <span class="file-name"> No File Uploaded yet</span>
-                </label>
-              </div>
-
-        <div class="buttons is-right">
-            <button type="submit" name="feedback" class="button is-primary " value="Submit">Submit assignment</button> 
+                <div class="file is-normal is-boxed is-centered has-name" id="fileSubmisdiv">
+                    <label class="file-label">
+                      <input type="file" class="file-input" name="fileup" id="fileSubmis" multiple required />
+                      <span class="file-cta">
+                        <span class="file-icon">
+                          <i class="fas fa-upload"></i>
+                        </span>
+                        <span class="file-label"> Upload pekerjaanmu...</span>
+                      </span>
+                      <span class="file-name"> No File Uploaded yet</span>
+                    </label>
+                  </div>
+    
+            <div class="buttons is-right">
+                <button type="submit" name="feedback" class="button is-primary " value="Submit">Submit assignment</button> 
+            </div> 
+    
+            </form>
         </div> 
-
-        </form>
-    </div> 
-
-
-    <script>
-        const fileInput = document.querySelector("#fileSubmisdiv input[type=file]");
-        fileInput.onchange = () => {
-            if (fileInput.files.length > 0) {
-            const fileName = document.querySelector("#fileSubmisdiv .file-name");
-            fileName.textContent = fileInput.files[0].name;
-            }
-  };
-    </script> -->
+    
+    
+        <script>
+            const fileInput = document.querySelector("#fileSubmisdiv input[type=file]");
+            fileInput.onchange = () => {
+                if (fileInput.files.length > 0) {
+                const fileName = document.querySelector("#fileSubmisdiv .file-name");
+                fileName.textContent = fileInput.files[0].name;
+                }
+            };
+        </script> 
+    
+        {% endif %}
+    </section>
 
 
     

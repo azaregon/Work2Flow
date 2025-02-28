@@ -13,7 +13,7 @@
 <body class="m-4">
     
     <div class="hero-head mb-1">
-        <a class="button is-small"> < Back to profile</a>
+        <a class="button is-small" href="{{BASE_PATH}}/Profile"> < Back to profile</a>
     </div>
     
 
@@ -24,35 +24,41 @@
         </div>
     </section>
 
-    <form action="{varscollection.BASE_PATH}/updateProfile" method="post">
-        
-        <label for="newName" class="label">new name:</label>
-        <input name="newName" id="newName" class="input" placeholder="enter new name"></input><br><br>
+    <section class="container is-max-tablet">
+        <form action="{{BASE_PATH}}/updateProfile" method="post">
+            
+            <label for="newName" class="label">new name:</label>
+            <input name="newName" id="newName" class="input" placeholder="enter new name"></input><br><br>
 
-        <label for="newName" class="label">new email:</label>
-        <input type="email" name="newEmail" class="input" id="newEmail" placeholder="enter new email"></input><br><br>
+            <label for="newName" class="label">new email:</label>
+            <input type="email" name="newEmail" class="input" id="newEmail" placeholder="enter new email"></input><br><br>
 
-        <label for="newName" class="label">new desc:</label>
-        <textarea name="newDesc" id="newDesc" class="input" placeholder="enter new desc"></textarea><br><br>
-        <div class="buttons is-right">
-            <input type="submit" class="button is-primary"></input>
-        </div>
-    </form>
+            <label for="newName" class="label">new desc:</label>
+            <textarea name="newDesc" id="newDesc" class="input" placeholder="enter new desc"></textarea><br><br>
+            <div class="buttons is-right">
+                <input type="submit" class="button is-primary"></input>
+            </div>
+        </form>
 
-    <script>
-        function qSelect(query) {
-            return document.querySelector(query)
-        }
+        <script>
+            function qSelect(query) {
+                return document.querySelector(query)
+            }
 
-        function OLoad() {
-            const queryString = window.location.search;
-            const urlParams = new URLSearchParams(queryString);
-            qSelect("#newName").value = urlParams.get('newName'); 
-            qSelect("#newEmail").value = urlParams.get('newEmail'); 
-            qSelect("#newDesc").value = urlParams.get('newDesc'); 
-            window.history.replaceState({}, document.title,   window.location.origin + window.location.pathname);
+            function OLoad() {
+                const queryString = window.location.search;
+                const urlParams = new URLSearchParams(queryString);
+                qSelect("#newName").value = urlParams.get('newName'); 
+                qSelect("#newEmail").value = urlParams.get('newEmail'); 
+                qSelect("#newDesc").value = urlParams.get('newDesc'); 
+                window.history.replaceState({}, document.title,   window.location.origin + window.location.pathname);
 
-        }
-    </script>
+            }
+            $(document).ready(function () {
+                OLoad();
+            });
+        </script>
+    </section>
+
 </body>
 </html>

@@ -37,23 +37,46 @@ def home():
     requesterID = str(flask.session.get("ID"))
     requesterData = ctr.fetchUserByID(requesterID)
 
-    unfinishedDatas = ctr.getYourUnfinishedAssignment(yourUserID=requesterID)
-    # print(unfinishedDatas)
+    yourUnfinishedAssignments = ctr.getYourUnfinishedAssignment(yourUserID=requesterID)
+    AssignmentsCreatedByYouThatHasNotDoneYet = ctr.getAssignmentCreatedByYouThatHasNotDoneYet(yourUserID=requesterID)
+    print(yourUnfinishedAssignments)
 
-    unfinishedDatasHTML = ''''''
-    for unfinishedData in unfinishedDatas:
-        if unfinishedData[2] != "Empty":
-            unfinishedDatasHTML += f"""
+    yourUnfinishedAssignmentsHTML = ''''''
+    for yourUnfinishedAssignment in yourUnfinishedAssignments:
+        if yourUnfinishedAssignment[2] != "Empty":
+            yourUnfinishedAssignmentsHTML += f"""
                 <tr>
-                    <td>{unfinishedData[0]}</td>
-                    <td>{unfinishedData[1]}</td>
-                    <td>{unfinishedData[2]}</td>
-                    <td>{unfinishedData[3]}</td>
-                    <td>{datetime.fromtimestamp(unfinishedData[7]).strftime('%Y-%m-%d %H:%M:%S')}</td>
-                    <td>{ctr.fetchUserByID(str(unfinishedData[9]))[2]}</td>
-                    <td>{f'<a href="{varscollection.BASE_PATH}/Assignment/{unfinishedData[0]}/{unfinishedData[1]}?ID={requesterID}"> Link </a>'}
+                    <td>{yourUnfinishedAssignment[0]}</td>
+                    <td>{yourUnfinishedAssignment[1]}</td>
+                    <td>{yourUnfinishedAssignment[2]}</td>
+                    <td>{yourUnfinishedAssignment[3]}</td>
+                    <td>{datetime.fromtimestamp(yourUnfinishedAssignment[7]).strftime('%Y-%m-%d %H:%M:%S')}</td>
+                    <td>{ctr.fetchUserByID(str(yourUnfinishedAssignment[9]))[2]}</td>
+                    <td>{f'<a href="{varscollection.BASE_PATH}/Assignment/{yourUnfinishedAssignment[0]}/{yourUnfinishedAssignment[1]}?ID={requesterID}"> Link </a>'}
                 </tr>
             """
+
+    AssignmentCreatedByYouThatHasNotDoneYetHTML = ''''''
+    for AssignmentCreatedByYouThatHasNotDoneYet in AssignmentsCreatedByYouThatHasNotDoneYet:
+        if AssignmentCreatedByYouThatHasNotDoneYet[2] != "Empty":
+            AssignmentCreatedByYouThatHasNotDoneYetHTML += f"""
+                <tr>
+                    <td>{AssignmentCreatedByYouThatHasNotDoneYet[0]}</td>
+                    <td>{AssignmentCreatedByYouThatHasNotDoneYet[1]}</td>
+                    <td>{AssignmentCreatedByYouThatHasNotDoneYet[2]}</td>
+                    <td>{AssignmentCreatedByYouThatHasNotDoneYet[3]}</td>
+                    <td>{datetime.fromtimestamp(AssignmentCreatedByYouThatHasNotDoneYet[7]).strftime('%Y-%m-%d %H:%M:%S')}</td>
+                    <td>{ctr.fetchUserByID(str(AssignmentCreatedByYouThatHasNotDoneYet[10]))[2]}</td>
+                    <td>{f'<a href="{varscollection.BASE_PATH}/Assignment/{AssignmentCreatedByYouThatHasNotDoneYet[0]}/{AssignmentCreatedByYouThatHasNotDoneYet[1]}?ID={requesterID}"> Link </a>'}
+                </tr>
+            """
+
+    return flask.render_template("dashboard.html", 
+                                 yourUnfinishedAssignmentsHTML = yourUnfinishedAssignmentsHTML, 
+                                 AssignmentCreatedByYouThatHasNotDoneYetHTML = AssignmentCreatedByYouThatHasNotDoneYetHTML, 
+                                 BASE_PATH=varscollection.BASE_PATH, 
+                                 BASE_URL = varscollection.BASE_URL,
+                                requesterData = requesterData )
 
     return f''' 
         <h1>welcome {requesterData[2]} </h1>
@@ -91,7 +114,12 @@ def home():
 
 @app.route('/login', methods=['GET','POST'])
 def login():
+    if not_logged_in():
+        pass
+    else:
+        return flask.redirect(f"{varscollection.BASE_PATH}/")
     if flask.request.method == 'GET':
+        return flask.render_template('login.html',varscollection=varscollection)
         return  f'''
         <body onload="OLoad()">
             <form action="{varscollection.BASE_PATH}/login" method="post">
@@ -123,6 +151,7 @@ def login():
     elif flask.request.method == 'POST':
         # print('LOGG')
         # loginID = flask.request.form.get("id")
+        print(flask.request.form)
         loginEmail = flask.request.form.get("email")
         loginPW = flask.request.form.get("password")
 
@@ -174,6 +203,7 @@ def createAssignment():
         return flask.redirect(f'{varscollection.BASE_PATH}/login')
     
     if flask.request.method == "GET":
+        return flask.render_template("createAssignment.html")
         return f'''
         <body onload="OLoad()">
         <form method="post">
@@ -287,13 +317,13 @@ def AssignmentHistory(assignmentID):
         # return """ You have no access"""
         return """Anda tidak memiliki akses"""
 
-    ret_temp = """"""
+    verListHTML = """"""
 
     for i in result:
-        ret_temp += f"<a href=\"{varscollection.BASE_PATH}/Assignment/{assignmentID}/{i}?ID={requesterID}\">version {i}</a><br>"
+        verListHTML += f"<a href=\"{varscollection.BASE_PATH}/Assignment/{assignmentID}/{i}?ID={requesterID}\">version {i}</a><br>"
 
 
-    return ret_temp
+    return flask.render_template("otherVersion.html",verListHTML=verListHTML,assignmentID=assignmentID)
 
 @app.route("/Assignment/<assignmentID>/<version>")
 def seeAssignment(assignmentID,version):
@@ -322,6 +352,7 @@ def seeAssignment(assignmentID,version):
         # return f'''
         #     <h1>Permission Denied</h1>
         # '''
+        return flask.render_template("accessDenied.html")
         return f'''
             <h1>Akses ditolak</h1>
         '''
@@ -335,68 +366,79 @@ def seeAssignment(assignmentID,version):
             <li><a href="{varscollection.BASE_PATH}/dwnld/{assignmentID}/{version}/{filename}?ID={accesserID}">{filename}</a></li>
         """
 
+    if accesserID == str(result[9]) :
+        return flask.redirect(f"{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}/creatorview")
+    elif accesserID == str(result[10]):
+        return flask.render_template("seeAssignmentRecipient.html",result=result,
+                                     giverData=giverData,
+                                     fileListHTML=fileListHTML,
+                                     BASE_PATH=varscollection.BASE_PATH,
+                                     assignmentID=assignmentID,
+                                     accesserID=accesserID)
 
-    baseTemplate = f'''
-        <h1>{result[3]}-v{result[1]}</h1>
 
-        <a href="{varscollection.BASE_PATH}/AssignmentHistory/{assignmentID}?ID={accesserID}"> Lihat versi lain</a>
+    # baseTemplate = f'''
+    #     <h1>{result[3]}-v{result[1]}</h1>
 
-        <h2>{result[4]}</h2><br>
-        <span>dari: <b>{giverData[2]}</b> ||| status: <b>{result[2]}</b></span>
+    #     <a href="{varscollection.BASE_PATH}/AssignmentHistory/{assignmentID}?ID={accesserID}"> Lihat versi lain</a>
+
+    #     <h2>{result[4]}</h2><br>
+    #     <span>dari: <b>{giverData[2]}</b> ||| status: <b>{result[2]}</b></span>
 
 
 
-        <ul>
-            {fileListHTML}
-        </ul>
+    #     <ul>
+    #         {fileListHTML}
+    #     </ul>
 
-    '''
+    # '''
 
-    template = f'''{baseTemplate}'''
+    # template = f'''{baseTemplate}'''
+
     
 
 
-    if accesserID == str(result[9]) :
-       return f"{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}/creatorview"
-       template = f''' {baseTemplate}<br><br>
-                    <a href="{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}/creatorview">Pergi ke halaman untuk pembuat tugas</a>
+    # if accesserID == str(result[9]) :
+    #    return f"{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}/creatorview"
+    #    template = f''' {baseTemplate}<br><br>
+    #                 <a href="{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}/creatorview">Pergi ke halaman untuk pembuat tugas</a>
        
-       '''
-    elif accesserID == str(result[10]) and str(result[2]).upper() == 'DIBERIKAN':
-        template = f'''{baseTemplate}<br><br><br><br><br>
-            <form method="post" action="{varscollection.BASE_PATH}/acceptassignment">
-                <input type="hidden" name="requesterID" value="{accesserID}"></input>
-                <input type="hidden" name="aid" value="{result[0]}"></input>
-                <input type="hidden" name="ver" value="{result[1]}"></input>
+    #    '''
+    # elif accesserID == str(result[10]) and str(result[2]).upper() == 'DIBERIKAN':
+    #     template = f'''{baseTemplate}<br><br><br><br><br>
+    #         <form method="post" action="{varscollection.BASE_PATH}/acceptassignment">
+    #             <input type="hidden" name="requesterID" value="{accesserID}"></input>
+    #             <input type="hidden" name="aid" value="{result[0]}"></input>
+    #             <input type="hidden" name="ver" value="{result[1]}"></input>
 
-                <button type="submit" name="feedback" value="Accept">Terima tugas</button> 
-            </form>
-        '''
-    elif accesserID == str(result[10]) and str(result[2]).upper() == 'DIKERJAKAN':
-        # FOR THE SUBMIT
+    #             <button type="submit" name="feedback" value="Accept">Terima tugas</button> 
+    #         </form>
+    #     '''
+    # elif accesserID == str(result[10]) and str(result[2]).upper() == 'DIKERJAKAN':
+    #     # FOR THE SUBMIT
 
-        template = f'''{baseTemplate}<br><br><br><br><br>
-            <form method="post" action="{varscollection.BASE_PATH}/submitfiles" enctype="multipart/form-data">
-                <input type="hidden" name="submitterID" value="{accesserID}"></input>
-                <input type="hidden" name="aid" value="{result[0]}"></input>
-                <input type="hidden" name="ver" value="{result[1]}"></input>
+    #     template = f'''{baseTemplate}<br><br><br><br><br>
+    #         <form method="post" action="{varscollection.BASE_PATH}/submitfiles" enctype="multipart/form-data">
+    #             <input type="hidden" name="submitterID" value="{accesserID}"></input>
+    #             <input type="hidden" name="aid" value="{result[0]}"></input>
+    #             <input type="hidden" name="ver" value="{result[1]}"></input>
 
 
-                <input type="file" name="fileup" multiple required />
+    #             <input type="file" name="fileup" multiple required />
 
-                <button type="submit" name="feedback" value="Submit">Submit assignment</button> 
-            </form>
-        '''
+    #             <button type="submit" name="feedback" value="Submit">Submit assignment</button> 
+    #         </form>
+    #     '''
 
-        # template = f'''{baseTemplate}<br><br><br><br><br>
-        #     <form>
-        #         <button type="submit" name="feedback" value="Accept">Accept</button> 
-        #     </form>
-        # '''
+    #     # template = f'''{baseTemplate}<br><br><br><br><br>
+    #     #     <form>
+    #     #         <button type="submit" name="feedback" value="Accept">Accept</button> 
+    #     #     </form>
+    #     # '''
 
         
 
-    return template
+    # return template
 
 
 @app.route("/Assignment/<assignmentID>/<version>/creatorview")
@@ -422,6 +464,7 @@ def seeAssignmentAsCreator(assignmentID,version):
 
     # print(accesserID,result[9],result[10])
     if result[2]  == "Permission Denied":
+        return flask.render_template("accessDenied.html")
         return f'''
             <h1>Akses ditolak</h1>
         '''
@@ -451,63 +494,70 @@ def seeAssignmentAsCreator(assignmentID,version):
     '''
 
     template = f'''{baseTemplate}'''
+
+    if accesserID == str(result[10]):
+        return flask.redirect(f"{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}")
+    elif accesserID == str(result[9]):
+        return flask.render_template("seeAssignmentCreator.html",result=result,fileListHTML=fileListHTML,BASE_PATH=varscollection.BASE_PATH,assignmentID=assignmentID,accesserID=accesserID)
+    else:
+        return flask.render_template("accessDenied.html")
     
 
 
-    if accesserID == str(result[9]) and str(result[2]).upper() == 'MENUNGGU-REVIEW':
-        template = f'''{baseTemplate}<br><br><br><br><br>
-            <style>
-                #reviseToggle + #reviseForm {{ display:none;}}
-                #reviseToggle:checked + #reviseForm {{ display:block;}}
-            </style>
-            <form id="reviseForm" method="post" action="{varscollection.BASE_PATH}/acceptSubmis">
-                <input type="hidden" name="submitterID" value="{accesserID}"></input>
-                <input type="hidden" name="aid" value="{result[0]}"></input>
-                <input type="hidden" name="ver" value="{result[1]}"></input>
+    # if accesserID == str(result[9]) and str(result[2]).upper() == 'MENUNGGU-REVIEW':
+    #     template = f'''{baseTemplate}<br><br><br><br><br>
+    #         <style>
+    #             #reviseToggle + #reviseForm {{ display:none;}}
+    #             #reviseToggle:checked + #reviseForm {{ display:block;}}
+    #         </style>
+    #         <form id="reviseForm" method="post" action="{varscollection.BASE_PATH}/acceptSubmis">
+    #             <input type="hidden" name="submitterID" value="{accesserID}"></input>
+    #             <input type="hidden" name="aid" value="{result[0]}"></input>
+    #             <input type="hidden" name="ver" value="{result[1]}"></input>
                
-                <button type="submit" name="feedback" value="AcceptSubmission">Tandai tugas selesai</button> 
-            </form>
+    #             <button type="submit" name="feedback" value="AcceptSubmission">Tandai tugas selesai</button> 
+    #         </form>
 
-            <!--<input id="reviseToggle" name="reviseToggle" type="checkbox">-->
-                <label for="reviseToggle">Minta revisi</label> 
-            </input><br>
-            <form id="reviseForm" method="post" action="{varscollection.BASE_PATH}/revise">
-                <input type="hidden" name="requesterID" value="{accesserID}"></input>
-                <input type="hidden" name="aid" value="{result[0]}"></input>
-                <input type="hidden" name="ver" value="{result[1]}"></input>
-                <br><br>
-                <div style="border: 2px solid black; padding:10px;"  >
-                    <textarea name="desc" placeholder="Desc.."></textarea><br><br>
-                    <label for="duedate">Berikan tenggat:</label><input name="duedate" id="duedate" type="datetime-local" /><br><br>
-                </div>
+    #         <!--<input id="reviseToggle" name="reviseToggle" type="checkbox">-->
+    #             <label for="reviseToggle">Minta revisi</label> 
+    #         </input><br>
+    #         <form id="reviseForm" method="post" action="{varscollection.BASE_PATH}/revise">
+    #             <input type="hidden" name="requesterID" value="{accesserID}"></input>
+    #             <input type="hidden" name="aid" value="{result[0]}"></input>
+    #             <input type="hidden" name="ver" value="{result[1]}"></input>
+    #             <br><br>
+    #             <div style="border: 2px solid black; padding:10px;"  >
+    #                 <textarea name="desc" placeholder="Desc.."></textarea><br><br>
+    #                 <label for="duedate">Berikan tenggat:</label><input name="duedate" id="duedate" type="datetime-local" /><br><br>
+    #             </div>
                 
-                <button type="submit" name="feedback" value="Revise">Minta revisi</button> 
-            </form>
-        '''
-    elif accesserID == str(result[9]):
-        return baseTemplate
-    elif accesserID == str(result[10]):
-        # template =  f'''
-        #     you are not permitted to see the admin page, go here to see yours<br>
-        #     <a href="{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}">GO here</a>
-        # '''
-        template =  f'''
-           Kamu tidak memiliki akses untuk melihat halaman "pembuat soal", gunakan link di bawah untuk melihat<br>
-            <a href="{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}">GO here</a>
-        '''
-    else:
-        # return ''' you are not related with this assignement'''
-        return '''Kamu tidak memiliki kaitan dengan tugas ini '''
+    #             <button type="submit" name="feedback" value="Revise">Minta revisi</button> 
+    #         </form>
+    #     '''
+    # elif accesserID == str(result[9]):
+    #     return baseTemplate
+    # elif accesserID == str(result[10]):
+    #     # template =  f'''
+    #     #     you are not permitted to see the admin page, go here to see yours<br>
+    #     #     <a href="{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}">GO here</a>
+    #     # '''
+    #     template =  f'''
+    #        Kamu tidak memiliki akses untuk melihat halaman "pembuat soal", gunakan link di bawah untuk melihat<br>
+    #         <a href="{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}">GO here</a>
+    #     '''
+    # else:
+    #     # return ''' you are not related with this assignement'''
+    #     return '''Kamu tidak memiliki kaitan dengan tugas ini '''
 
-        # template = f'''{baseTemplate}<br><br><br><br><br>
-        #     <form>
-        #         <button type="submit" name="feedback" value="Accept">Accept</button> 
-        #     </form>
-        # '''
+    #     # template = f'''{baseTemplate}<br><br><br><br><br>
+    #     #     <form>
+    #     #         <button type="submit" name="feedback" value="Accept">Accept</button> 
+    #     #     </form>
+    #     # '''
 
         
 
-    return template
+    # return template
 
 
 
@@ -609,7 +659,7 @@ def acceptSubmis():
         
         print(sumbisFinishAcceptID)
         result = ctr.acceptsubmit(AssignmentID=assignmentID,version=version,usrIDacceptsubmit=str(sumbisFinishAcceptID))
-    return result
+        return flask.redirect(f"/Assignment/{assignmentID}/{version}")
 
 
 
@@ -668,6 +718,8 @@ def assignmentToOther():
 @app.route("/Profile")
 def seeProfile():
     userData = ctr.fetchUserByID(flask.session.get("ID"))
+
+    return flask.render_template("profile.html",BASE_PATH=varscollection.BASE_PATH,userData=userData)
     return f'''
     <body>
         <h1>Profile page</h1>
@@ -688,6 +740,7 @@ def seeProfile():
 def updateProfile():
 
     if flask.request.method == 'GET':
+        return flask.render_template("editProfile.html",BASE_PATH=varscollection.BASE_PATH)
         return f'''
             <body>
                 <h1>Edit Profile</h1>
@@ -751,5 +804,5 @@ def logout():
 
 
 if __name__ == '__main__':
-    app.run(host=varscollection.HOST_IP,port=varscollection.HOST_PORT)
+    app.run(debug=1,host=varscollection.HOST_IP,port=varscollection.HOST_PORT)
 

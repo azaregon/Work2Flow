@@ -12,30 +12,36 @@
 </head>
 <body class="m-4">
     <div class="hero-head mb-1">
-        <a class="button is-small"> < Back to dashboard</a>
+        <a class="button is-small" href="{{BASE_PATH}}/"> < Back to dashboard</a>
     </div>
-    
-    <div class="hero">
-        <div class="hero-body">
-            <h1 class="title">Profile</h1>
+
+
+    <section class="container is-max-tablet">
+        <div class="hero">
+            <div class="hero-body">
+                <h1 class="title">Profile</h1>
+            </div>
+            
+            <table>
+                <tr>
+                    <th class="has-text-right">Name: </th>
+                    <td class="has-text-centered">{{ userData[2] }}</td>
+                </tr>
+                <tr>
+                    <th class="has-text-right">Desc: </th>
+                    <td class="has-text-centered">{{ userData[3] }}</td>
+                </tr>
+                <tr>
+                    <th class="has-text-right">Email: </th>
+                    <td class="has-text-centered">{{ userData[4] }}</td>
+                </tr>
+            </table>
+            <div>
+                <a class="button is-text" href="{{BASE_PATH}}/updateProfile">edit Profile</a>
+            </div>
         </div>
-
-        <table>
-            <tr>
-                <th class="has-text-right">Name: </th>
-                <td class="has-text-centered">Nanda</td>
-            </tr>
-            <tr>
-                <th class="has-text-right">Desc: </th>
-                <td class="has-text-centered">Student @ akak</td>
-            </tr>
-            <tr>
-                <th class="has-text-right">Email: </th>
-                <td class="has-text-centered">aza@domain.com</td>
-            </tr>
-        </table>
-
-
+    </section>
+    
 
     
 </body>

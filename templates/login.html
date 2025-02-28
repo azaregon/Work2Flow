@@ -16,17 +16,26 @@
         <div class="hero-body">
             <div class="box">
                 <h1 class="title">Log In</h1>
-                <form action="{varscollection.BASE_PATH}/login" method="post">
+                <form action="{{ varscollection.BASE_PATH }}/login" method="post">
                     
                     <!--<input name="id" placeholder="Masukkan ID mu"></input>-->
                     
                     <label for="email" class="label">Email</label>
-                    <input type="email" email="email" id="Emailinp" class="input" placeholder="Masukkan Email-mu"></input>
+                    <input type="email" name="email" id="Emailinp" class="input" placeholder="Masukkan Email-mu"></input>
                     <br><br>
                     <label for="password" class="label">Password</label>
                     <input type="password" id="PWDinp" class="input" name="password" placeholder="tuliskan Password"></input> 
                     <br><br>
-                    <span hidden>{flask.get_flashed_messages()}</span>
+                    <!--<span hidden>{flask.get_flashed_messages()}</span>-->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <ul class=flashes>
+                        {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                    {% endwith %}
                     <br><br>
                     <input type="submit" class="button is-primary" value="Login"></input>
                 </form>

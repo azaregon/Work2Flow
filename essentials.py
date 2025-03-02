@@ -10,7 +10,7 @@ def send_email(to_:List[str],subject:str,msg:str):
     snd = requests.post(
         "https://api.mailgun.net/v3/mg.rm-dev.my.id/messages",
   		auth=("api", apikey),
-  		data={"from": "[NO REPLY] no reply",
+  		data={"from": "[NO REPLY] <mailgun@mg.rm-dev.my.id>",
   			"to": to_,
   			"subject": subject,
   			"text": msg})

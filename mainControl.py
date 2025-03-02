@@ -111,8 +111,8 @@ def new_assignment(title:str,desc:str,duedateepoch:float,userfrom:str,userfor:st
         os.mkdir(file_loc)
 
 
-    esn.send_email(to_=[emailfor],subject="Assignment",msg=f""" New assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{uniqueID}/1?ID={userfor} """)
-    esn.send_email(to_=[emailfrom],subject="Assignment",msg=f""" New assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{uniqueID}/1?ID={userfrom} """)
+    esn.send_email(to_=[emailfor],subject="New Assignment",msg=f""" New assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{uniqueID}/1?ID={userfor} """)
+    esn.send_email(to_=[emailfrom],subject="New Assignment",msg=f""" New assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{uniqueID}/1?ID={userfrom} """)
 
     return f"""{uniqueID}/1"""
     # return ("{uniqueID}", 1, 'diberikan', '{title}', '{desc}', '{folName}', {time.time()}, {duedateepoch}, 0, '{userfrom}', '{userfor}' )
@@ -167,8 +167,8 @@ def new_revision(AssignmentID,lastVersion,desc:str,duedateepoch:float,usrIDreque
         os.mkdir(file_loc)
 
 
-    esn.send_email(to_=[emailfor],subject="Assignment",msg=f""" New revision request of your assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{AssignmentID}/{newVersion}?ID={userfor} """)
-    esn.send_email(to_=[emailfrom],subject="Assignment",msg=f""" New revision request of your assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{AssignmentID}/{newVersion}?ID={userfrom} """)
+    esn.send_email(to_=[emailfor],subject="Revision Needed",msg=f""" New revision request of your assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{AssignmentID}/{newVersion}?ID={userfor} """)
+    esn.send_email(to_=[emailfrom],subject="Revision Needed",msg=f""" New revision request of your assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{AssignmentID}/{newVersion}?ID={userfrom} """)
 
 
     return f"{AssignmentID}/{newVersion}"
@@ -207,8 +207,8 @@ def accept_assign(AssignmentID:str,version:int,usrIDacceptassign:str): # Accept 
     print(data)
     if str(data[10]) == usrIDacceptassign:
         changeState(assignmentID=AssignmentID,version=version,newState="dikerjakan")
-        esn.send_email(to_=[data[11]],subject="Submitted",msg=f""" assignment: {data[0]}, version: {data[1]}\n is on work\n Link: {varscollection.BASE_URL}/Assignment/{data[0]}/{data[1]}?ID={data[9]}""")
-        esn.send_email(to_=[data[12]],subject="Submitted",msg=f""" assignment: {data[0]}, version: {data[1]}\n is on work\n Link: {varscollection.BASE_URL}/Assignment/{data[0]}/{data[1]}?ID={data[10]}""")
+        esn.send_email(to_=[data[11]],subject="Assignment accepted",msg=f""" assignment: {data[0]}, version: {data[1]}\n is on work\n Link: {varscollection.BASE_URL}/Assignment/{data[0]}/{data[1]}?ID={data[9]}""")
+        esn.send_email(to_=[data[12]],subject="Assignment accepted",msg=f""" assignment: {data[0]}, version: {data[1]}\n is on work\n Link: {varscollection.BASE_URL}/Assignment/{data[0]}/{data[1]}?ID={data[10]}""")
 
         return "assignment accepted"
     elif str(data[9]) == usrIDacceptassign:

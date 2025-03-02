@@ -10,7 +10,7 @@ def send_email(to_:List[str],subject:str,msg:str):
     snd = requests.post(
         "https://api.mailgun.net/v3/mg.rm-dev.my.id/messages",
   		auth=("api", apikey),
-  		data={"from": "Excited User <mailgun@mg.rm-dev.my.id>",
+  		data={"from": "[NO REPLY] no reply",
   			"to": to_,
   			"subject": subject,
   			"text": msg})
@@ -18,15 +18,6 @@ def send_email(to_:List[str],subject:str,msg:str):
     return snd
 
 
-
-def temp_login_system(ID:str):
-    # pwd, email, Name
-    if ID == "111":
-        return ("admin1","dump.truck.aja@gmail.com","Cile")
-    if ID == "112":
-        return ("admin2","aazawarfare.tugas@gmail.com","File")
-    if ID == "113":
-        return ("admin3","ananda.aryasatya.z.a@gmail.com","Mile")
 
 
 if __name__ == '__main__':

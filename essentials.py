@@ -21,5 +21,5 @@ def send_email(to_:List[str],subject:str,msg:str):
 
 
 if __name__ == '__main__':
-    # print(send_email( ["dump.truck.aja@gmail.com","aazawarfare.tugas@gmail.com"] ,"LAS","Haloo").status_code)
+    print(send_email( ["dump.truck.aja@gmail.com","aazawarfare.tugas@gmail.com"] ,"LAS","Haloo").status_code)
     pass

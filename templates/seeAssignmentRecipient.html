@@ -37,6 +37,10 @@
                 <p >{{ result[4] }}</p><br>
             </section>
             
+            <h5 class="is-5 subtitle">Submission</h5>
+            <div class="container content">
+                {{ textSubmission|safe }}
+            </div>
             
             <h6 class="subtitle is-6">File Available:</h6>
             <ul>
@@ -80,7 +84,17 @@
                       </span>
                       <span class="file-name"> No File Uploaded yet</span>
                     </label>
-                  </div>
+                </div>
+
+
+            <div class="container my-4">
+                <label for="submisText" class="label">
+                    <span>
+                        Text submission: 
+                    </span>
+                    <textarea name="submisText" class="textarea" id="submisDesc" value="" ></textarea>
+                </label>
+            </div>
     
             <div class="buttons is-right">
                 <button type="submit" name="feedback" class="button is-primary " value="Submit">Submit assignment</button> 

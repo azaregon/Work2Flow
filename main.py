@@ -6,7 +6,7 @@ from datetime import datetime
 
 import controllerBridge as ctr
 import varscollection
-import essentials
+import essentials as esn
 
 app = flask.Flask(__name__)
 app.secret_key = '98as12uayvwnoasm8as9das3dsas2wqeyw4cweqw7ec6qw98ewc69cqw8ne2cqwbb6qwnvqyey8asud'
@@ -68,6 +68,7 @@ def home():
                     <td>{datetime.fromtimestamp(AssignmentCreatedByYouThatHasNotDoneYet[7]).strftime('%Y-%m-%d %H:%M:%S')}</td>
                     <td>{ctr.fetchUserByID(str(AssignmentCreatedByYouThatHasNotDoneYet[10]))[2]}</td>
                     <td>{f'<a href="{varscollection.BASE_PATH}/Assignment/{AssignmentCreatedByYouThatHasNotDoneYet[0]}/{AssignmentCreatedByYouThatHasNotDoneYet[1]}?ID={requesterID}"> Link </a>'}
+                    <td><button onclick="postResend('{AssignmentCreatedByYouThatHasNotDoneYet[0]}','{AssignmentCreatedByYouThatHasNotDoneYet[1]}')" class="button">resend</button></td>
                 </tr>
             """
 
@@ -356,25 +357,35 @@ def seeAssignment(assignmentID,version):
         return f'''
             <h1>Akses ditolak</h1>
         '''
-    
+    # Get text submission data
+
     #file listing
 
     fileList = os.listdir(os.path.join(varscollection.SUBMIT_FOLDER_PATH,f'''{assignmentID}-v{version}'''))
     fileListHTML = """"""
     for filename in fileList:
-        fileListHTML += f"""
-            <li><a href="{varscollection.BASE_PATH}/dwnld/{assignmentID}/{version}/{filename}?ID={accesserID}">{filename}</a></li>
-        """
+        if filename != "submisText.md":
+            fileListHTML += f"""
+                <li><a href="{varscollection.BASE_PATH}/dwnld/{assignmentID}/{version}/{filename}?ID={accesserID}">{filename}</a></li>
+            """
+
+    # read textSubmis
+    isi = ""
+    if os.path.exists(os.path.join(varscollection.SUBMIT_FOLDER_PATH,f'''{assignmentID}-v{version}''',"submisText.md")):
+        with open(os.path.join(varscollection.SUBMIT_FOLDER_PATH,f'''{assignmentID}-v{version}''',"submisText.md"),"r") as stf:
+            isi = stf.read()
 
     if accesserID == str(result[9]) :
         return flask.redirect(f"{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}/creatorview")
     elif accesserID == str(result[10]):
-        return flask.render_template("seeAssignmentRecipient.html",result=result,
+        return flask.render_template("seeAssignmentRecipient.html",
+                                     result=result,
                                      giverData=giverData,
                                      fileListHTML=fileListHTML,
                                      BASE_PATH=varscollection.BASE_PATH,
                                      assignmentID=assignmentID,
-                                     accesserID=accesserID)
+                                     accesserID=accesserID,
+                                     textSubmission=isi)
 
 
     # baseTemplate = f'''
@@ -469,14 +480,21 @@ def seeAssignmentAsCreator(assignmentID,version):
             <h1>Akses ditolak</h1>
         '''
     
+    # read textSubmis
+    isi = ""
+    if os.path.exists(os.path.join(varscollection.SUBMIT_FOLDER_PATH,f'''{assignmentID}-v{version}''',"submisText.md")):
+        with open(os.path.join(varscollection.SUBMIT_FOLDER_PATH,f'''{assignmentID}-v{version}''',"submisText.md"),"r") as stf:
+            isi = stf.read()
+    
     #file listing
 
     fileList = os.listdir(os.path.join(varscollection.SUBMIT_FOLDER_PATH,f'''{assignmentID}-v{version}'''))
     fileListHTML = """"""
     for filename in fileList:
-        fileListHTML += f"""
-            <li><a href="{varscollection.BASE_PATH}/dwnld/{assignmentID}/{version}/{filename}?ID={accesserID}">{filename}</a></li>
-        """
+        if filename != "submisText.md":
+            fileListHTML += f"""
+                <li><a href="{varscollection.BASE_PATH}/dwnld/{assignmentID}/{version}/{filename}?ID={accesserID}">{filename}</a></li>
+            """
 
 
     baseTemplate = f'''
@@ -498,7 +516,7 @@ def seeAssignmentAsCreator(assignmentID,version):
     if accesserID == str(result[10]):
         return flask.redirect(f"{varscollection.BASE_PATH}/Assignment/{assignmentID}/{version}")
     elif accesserID == str(result[9]):
-        return flask.render_template("seeAssignmentCreator.html",result=result,fileListHTML=fileListHTML,BASE_PATH=varscollection.BASE_PATH,assignmentID=assignmentID,accesserID=accesserID)
+        return flask.render_template("seeAssignmentCreator.html",result=result,fileListHTML=fileListHTML,BASE_PATH=varscollection.BASE_PATH,assignmentID=assignmentID,accesserID=accesserID,textSubmission=isi)
     else:
         return flask.render_template("accessDenied.html")
     
@@ -618,12 +636,18 @@ def submitFiles():
         submitterID = str(flask.session.get("ID"))
 
         
+        dbSubmit = ctr.submit(AssignmentID=assignmentID,version=version,usrIDsubmitter=submitterID)
+
+        fol_name = f"{assignmentID}-v{version}"
+        # safe the text submission named submisText
+        textSubmis = str(flask.request.form.get("submisText"))
+        with open(os.path.join(varscollection.SUBMIT_FOLDER_PATH,fol_name,"submisText.md"),"w") as stf:
+            stf.write(textSubmis)
+        
         # print('fileup' in flask.request.files)
         # print(flask.request.files)
-        dbSubmit = ctr.submit(AssignmentID=assignmentID,version=version,usrIDsubmitter=submitterID)
         if 'fileup' in flask.request.files and dbSubmit == "the assignment is menunggu-review":
             files = flask.request.files.getlist('fileup')
-            fol_name = f"{assignmentID}-v{version}"
             file_loc = os.path.join(varscollection.SUBMIT_FOLDER_PATH,fol_name)
             
             if not os.path.exists(file_loc):
@@ -793,6 +817,42 @@ def updateProfile():
         return flask.redirect(f'{varscollection.BASE_PATH}/Profile')
 
 
+@app.route("/resend",methods=['POST'])
+def resend():
+    
+    if not_logged_in():
+        return flask.redirect(f'{varscollection.BASE_PATH}/login')
+
+    # accesserID = str(flask.request.args.get('ID'))
+    
+    accesserID = str(flask.session.get('ID'))
+    aid = flask.request.form.get('aid')
+    version = flask.request.form.get('ver')
+    result = ctr.seeAssignment(assignmentID=aid,ver=version,userID=accesserID)
+
+    emailfor = result[11]
+    emailfrom = result[12]
+
+    if result[1] == "Permission Denied" or result[1] == "NF":
+        return "Denied"
+    else:
+        if result[2].upper() == "DIBERIKAN":
+            res = esn.send_email(to_=[emailfor],subject="New Assignment",msg=f""" New assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{aid}/1 """)
+            res = esn.send_email(to_=[emailfrom],subject="New Assignment",msg=f""" New assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{aid}/1 """)
+
+        elif result[2].upper() == "DIBERIKAN" and str(result[1]) != "1":
+            res = esn.send_email(to_=[emailfor],subject="Revision Needed",msg=f""" New revision request of your assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{aid}/{result[1]} """)
+            res = esn.send_email(to_=[emailfrom],subject="Revision Needed",msg=f""" New revision request of your assignment has been added on:\n {varscollection.BASE_URL}/Assignment/{aid}/{result[1]} """)
+
+        elif result[2].upper() == "MENUNGGU-REVIEW":
+            res = esn.send_email(to_=[emailfor],subject="Submitted",msg=f""" File has been submitted on\n assignment: {result[0]},\n version: {result[1]}\n Link:\n {varscollection.BASE_URL}/Assignment/{result[0]}/{result[1]} """)
+            res = esn.send_email(to_=[emailfrom],subject="Submitted",msg=f""" File has been submitted on\n assignment: {result[0]},\n version: {result[1]}\n Link:\n {varscollection.BASE_URL}/Assignment/{result[0]}/{result[1]} """)
+
+        elif result[2].upper() == "DIKERJAKAN" :
+            res = esn.send_email(to_=[emailfor],subject="Assignment accepted",msg=f""" assignment: {result[0]}, version: {result[1]}\n is on work\n Link: {varscollection.BASE_URL}/Assignment/{aid}/{result[1]}""")
+            res = esn.send_email(to_=[emailfrom],subject="Assignment accepted",msg=f""" assignment: {result[0]}, version: {result[1]}\n is on work\n Link: {varscollection.BASE_URL}/Assignment/{aid}/{result[1]}""")
+    print(emailfor,emailfrom)
+    return "l"
 
 @app.route('/logout')
 def logout():

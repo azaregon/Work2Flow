@@ -124,6 +124,7 @@
           <th>Due date</th>
           <th>for</th>
           <th>url</th>
+          <th>resend</th>
         </tr>
       </thead>
       <tbody>
@@ -166,41 +167,50 @@
         $(target).toggleClass("is-active");
 
       }
-      $(document).ready(function() {
 
-      // Check for click events on the navbar burger icon
-        $(".navbar-burger").click(function() {
+    function postResend(aid,ver) {
+      $.post("{{BASE_PATH}}/resend", {"aid":aid,"ver":ver}, function(data, status){
+        alert(data);
+      });
 
-            // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
-            isactivetoggler(".navbar-burger")
-            isactivetoggler(".navbar-menu")
-        });
+    }
 
-        $("#forYouTabs").click(function() {
+    $(document).ready(function() {
 
-          // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
-          isactivetoggler("#forYouTabs")
-          isactivetoggler("#fromYouTabs")
-          $("#fromYou").hide();
-          $("#forYou").show();
-        });
-        
-        $("#fromYouTabs").click(function() {
+    // Check for click events on the navbar burger icon
+      $(".navbar-burger").click(function() {
 
           // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
-          isactivetoggler("#fromYouTabs")
-          isactivetoggler("#forYouTabs")
-          $("#forYou").hide();
-          $("#fromYou").show();
-        });
+          isactivetoggler(".navbar-burger")
+          isactivetoggler(".navbar-menu")
+      });
 
+      $("#forYouTabs").click(function() {
 
-      $(document).ready(function () {
-        $("#todaysDate").text(getDateIna());
+        // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+        isactivetoggler("#forYouTabs")
+        isactivetoggler("#fromYouTabs")
+        $("#fromYou").hide();
+        $("#forYou").show();
+      });
+      
+      $("#fromYouTabs").click(function() {
+
+        // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+        isactivetoggler("#fromYouTabs")
+        isactivetoggler("#forYouTabs")
+        $("#forYou").hide();
+        $("#fromYou").show();
       });
 
 
-      });
+    $(document).ready(function () {
+      $("#todaysDate").text(getDateIna());
+    });
+    
+
+
+    });
     </script>
   </body>
 </html>

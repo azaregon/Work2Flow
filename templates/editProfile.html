@@ -13,8 +13,14 @@
 <body class="m-4">
     
     <div class="hero-head mb-1">
-        <a class="button is-small" href="{{BASE_PATH}}/Profile"> < Back to profile</a>
+        {% if isAdmin  == 1%}
+            <a class="button is-small" href="{{BASE_PATH}}/adminDashboard"> < Back to admin dashboard</a>
+        {% else %}
+            <a class="button is-small" href="{{BASE_PATH}}/Profile"> < Back to profile</a>
+        {% endif %}
     </div>
+
+
     
 
     <section class="hero">
@@ -26,6 +32,10 @@
 
     <section class="container is-max-tablet">
         <form action="{{BASE_PATH}}/updateProfile" method="post">
+            {% if isAdmin  == 1%}
+                <input type="hidden" value="{{ uEmail }}" name="uEmail" hidden>
+            {% endif %}
+
             
             <label for="newName" class="label">new name:</label>
             <input name="newName" id="newName" class="input" placeholder="enter new name"></input><br><br>

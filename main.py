@@ -763,8 +763,10 @@ def seeProfile():
 @app.route('/updateProfile',methods=['GET','POST'])
 def updateProfile():
 
+    isAdmin = flask.session.get("ID")[0:5] == "40m1n"
+
     if flask.request.method == 'GET':
-        return flask.render_template("editProfile.html",BASE_PATH=varscollection.BASE_PATH)
+        return flask.render_template("editProfile.html",BASE_PATH=varscollection.BASE_PATH,isAdmin=int(isAdmin),uEmail=flask.request.args.get('uEmail'))
         return f'''
             <body>
                 <h1>Edit Profile</h1>
@@ -795,7 +797,7 @@ def updateProfile():
                 </script>
             </body>
         '''
-    elif flask.request.method == 'POST':
+    elif flask.request.method == 'POST' and not isAdmin:
         currUserData = ctr.fetchUserByID(flask.session.get('ID'))
 
         newName = flask.request.form.get("newName")
@@ -815,6 +817,29 @@ def updateProfile():
             flask.session['EMAIL'] = newEmail
             
         return flask.redirect(f'{varscollection.BASE_PATH}/Profile')
+
+
+
+    elif flask.request.method == 'POST' and isAdmin:
+        # currUserData = ctr.fetchUserByID(flask.request.form.get('ID'))
+
+        newName = flask.request.form.get("newName")
+
+        newEmail = flask.request.form.get("newEmail")
+
+        newDesc = flask.request.form.get("newDesc")
+
+        print(newName,newEmail,newDesc)
+
+        res = ctr.userUpdateData(flask.request.form.get("uEmail"),newName=newName,newDesc=newDesc,newEmail=newEmail)
+        print(res)
+        if res[:3] == "ERR":
+            return flask.redirect(f'{varscollection.BASE_PATH}/updateProfile?newName={newName}&newEmail={newEmail}&newDesc={newDesc}')
+
+        # if newEmail != "":
+        #     flask.session['EMAIL'] = newEmail
+            
+        return flask.redirect(f'{varscollection.BASE_PATH}/adminDashboard')
 
 
 @app.route("/resend",methods=['POST'])
@@ -853,6 +878,40 @@ def resend():
             res = esn.send_email(to_=[emailfrom],subject="Assignment accepted",msg=f""" assignment: {result[0]}, version: {result[1]}\n is on work\n Link: {varscollection.BASE_URL}/Assignment/{aid}/{result[1]}""")
     print(emailfor,emailfrom)
     return "l"
+
+
+@app.route('/adminDashboard')
+def adminDashboard():
+    if not_logged_in():
+        return flask.redirect(f'{varscollection.BASE_PATH}/login')
+
+    uid = flask.session.get('ID')
+    if uid[0:5] != "40m1n":
+        return flask.redirect('/')
+    
+    datas = ctr.fetchAllUser()
+    
+
+    userDataAsHtml = """"""
+
+    for data in datas:
+        print(data)
+        userDataAsHtml += f"""
+            <tr>
+                <td>{data[0]}</td>
+                <td>{data[2]}</td>
+                <td>{data[4]}</td>
+                <td>{data[3]}</td>
+                <td>{data[1]}</td>
+                <td><a href="/updateProfile?uEmail={data[3]}" class="button is-primary is-small">edit Profile</td>
+            </tr>
+        """
+
+    return flask.render_template("adminDashboard.html",userDataAsHtml=userDataAsHtml)
+
+        
+
+    
 
 @app.route('/logout')
 def logout():

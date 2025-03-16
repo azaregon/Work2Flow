@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/da5943c57b.js" crossorigin="anonymous"></script>
+
+</head>
+<body class="m-4">
+
+    <a class="button is-small" href="{{ BASE_PATH }}/"> < Back to dashboard</a>
+
+
+
+    <div class="">
+        <div id="allDataTable" >
+            <table class="container is-fullwidth table" > 
+              <thead>
+                <tr>
+                  <th>user ID</th>
+                  <th>Name</th>
+                  <th>Desc</th>
+                  <th>Email</th>
+                  <th>Password</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{ userDataAsHtml|safe }}
+                <!--<tr>
+                  <td>d</td>
+                  <td>e</td>
+                  <td>menunggu-review</td>
+                  <td>f</td>
+                  <td>2025-02-23 05:47:00</td>
+                  <td>acc797a1-412f-4554-9e1e-9d61ce870199</td>
+                  <td><a href="/W2F/Assignment/c00a5eb1-056e-4d0a-8b5f-8a3cd36b398f/1?ID=3d152271-fc92-4c3c-9d05-4557f6852c67"> Link </a></td>
+                </tr>-->
+              </tbody>
+            </table>
+          </div>
+        
+        </div>
+
+    <!-- <section class="hero">
+        <div class="hero-body">
+          <p class="title">Hero title</p>
+          <p class="subtitle">Hero subtitle</p>
+        </div>
+      </section> -->
+    
+</body>
+</html>
